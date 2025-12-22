@@ -22,6 +22,8 @@ import { Stages } from './pages/stages/stages';
 import { AddStages } from './pages/stages/add-stages/add-stages';
 import { TermsAndConditions } from './pages/terms-and-conditions/terms-and-conditions';
 import { AddTermsAndConditions } from './pages/terms-and-conditions/add-terms-and-conditions/add-terms-and-conditions';
+import { UnitType } from './pages/unit-type/unit-type';
+import { AddUnitType } from './pages/unit-type/add-unit-type/add-unit-type';
 
 export const routes: Routes = [
   {
@@ -188,5 +190,20 @@ export const routes: Routes = [
     path: 'terms-and-conditions/edit/:id',
     component: AddTermsAndConditions,
     title: 'Edit Terms and Conditions',
+  },
+  {
+    path: 'unit-type',
+    component: UnitType,
+    title: 'View Unit Types',
+  },
+  {
+    path: 'unit-type/add',
+    component: AddUnitType,
+    title: 'Add Unit Type',
+  },
+  {
+    path: 'unit-type/edit/:id',
+    component: AddUnitType,
+    title: 'Edit Unit Type',
   },
 ];

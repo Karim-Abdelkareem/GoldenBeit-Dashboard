@@ -19,6 +19,7 @@ import {
   Landmark,
   Layers2,
   FileText,
+  House,
 } from 'lucide-angular';
 import { Router, RouterLink } from '@angular/router';
 import { AccordionModule } from 'primeng/accordion';
@@ -220,6 +221,23 @@ export class Sidebar {
           label: 'Add Terms and Conditions',
           icon: Plus,
           route: '/terms-and-conditions/add',
+        },
+      ],
+    },
+    {
+      label: 'Unit Type',
+      icon: House,
+      route: '/unit-type',
+      items: [
+        {
+          label: 'View Unit Type',
+          icon: House,
+          route: '/unit-type',
+        },
+        {
+          label: 'Add Unit Type',
+          icon: Plus,
+          route: '/unit-type/add',
         },
       ],
     },
