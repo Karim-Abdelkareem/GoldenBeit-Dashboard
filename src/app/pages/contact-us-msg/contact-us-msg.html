@@ -1,0 +1,148 @@
+<div class="container mx-auto p-6 max-w-7xl">
+  <div class="flex justify-between items-center border-b border-gray-200 pb-4 my-6">
+    <h1 class="text-3xl font-bold" style="color: #0d5a4b">Contact Us Messages</h1>
+  </div>
+
+  @if (loading()) {
+  <div class="flex justify-center items-center py-12">
+    <p class="text-gray-500">Loading messages...</p>
+  </div>
+  } @else {
+  <p-table
+    [value]="messages()"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[5, 10, 20, 50]"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    styleClass="p-datatable-striped"
+    [loading]="loading()"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Date</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-message let-i="rowIndex">
+      <tr>
+        <td>{{ i + 1 }}</td>
+        <td>{{ message.name || 'N/A' }}</td>
+        <td>
+          <div class="flex items-center gap-2">
+            <lucide-angular [img]="Mail" class="w-4 h-4 text-gray-500" />
+            {{ message.email || 'N/A' }}
+          </div>
+        </td>
+        <td>{{ message.phoneNumber || 'N/A' }}</td>
+        <td>
+          <div class="flex items-center gap-2">
+            <lucide-angular [img]="Calendar" class="w-4 h-4 text-gray-500" />
+            {{ formatDate(message.createdOn) }}
+          </div>
+        </td>
+        <td>
+          <button
+            (click)="viewMessage(message)"
+            class="p-2 rounded-md transition-colors"
+            style="background-color: #0d5a4b; color: white"
+            onmouseover="this.style.backgroundColor='#0f6b5a'"
+            onmouseout="this.style.backgroundColor='#0D5A4B'"
+            title="View Details"
+          >
+            <lucide-angular [img]="Eye" class="w-4 h-4" />
+          </button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="6" class="text-center py-8">
+          <div class="flex flex-col items-center gap-2">
+            <lucide-angular [img]="MessageSquare" class="w-12 h-12 text-gray-400" />
+            <p class="text-gray-500 text-lg">No contact messages found</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+  }
+
+  <!-- Message Details Dialog -->
+  <p-dialog
+    [(visible)]="detailsDialogVisible"
+    [modal]="true"
+    [style]="{ width: '600px', maxWidth: '90vw' }"
+    header="Message Details"
+    [draggable]="false"
+    [resizable]="false"
+    (onHide)="closeDetailsDialog()"
+  >
+    @if (selectedMessage) {
+    <div class="flex flex-col gap-4">
+      <!-- Name -->
+      <div class="flex items-start gap-3 pb-3 border-b border-gray-200">
+        <lucide-angular [img]="User" class="w-5 h-5 text-gray-500 mt-1" />
+        <div class="flex-1">
+          <p class="text-sm text-gray-500 mb-1">Name</p>
+          <p class="text-gray-800 font-medium">{{ selectedMessage.name || 'N/A' }}</p>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="flex items-start gap-3 pb-3 border-b border-gray-200">
+        <lucide-angular [img]="Mail" class="w-5 h-5 text-gray-500 mt-1" />
+        <div class="flex-1">
+          <p class="text-sm text-gray-500 mb-1">Email</p>
+          <p class="text-gray-800">{{ selectedMessage.email || 'N/A' }}</p>
+        </div>
+      </div>
+
+      <!-- Phone -->
+      @if (selectedMessage.phoneNumber) {
+      <div class="flex items-start gap-3 pb-3 border-b border-gray-200">
+        <lucide-angular [img]="User" class="w-5 h-5 text-gray-500 mt-1" />
+        <div class="flex-1">
+          <p class="text-sm text-gray-500 mb-1">Phone</p>
+          <p class="text-gray-800">{{ selectedMessage.phoneNumber }}</p>
+        </div>
+      </div>
+      }
+
+      <!-- Message -->
+      <div class="flex items-start gap-3 pb-3">
+        <lucide-angular [img]="MessageSquare" class="w-5 h-5 text-gray-500 mt-1" />
+        <div class="flex-1">
+          <p class="text-sm text-gray-500 mb-1">Message</p>
+          <p class="text-gray-800 whitespace-pre-wrap">
+            {{ selectedMessage.message || 'No message content' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Date -->
+      <div class="flex items-start gap-3 pt-3 border-t border-gray-200">
+        <lucide-angular [img]="Calendar" class="w-5 h-5 text-gray-500 mt-1" />
+        <div class="flex-1">
+          <p class="text-sm text-gray-500 mb-1">Date</p>
+          <p class="text-gray-800">{{ formatDate(selectedMessage.createdOn) }}</p>
+        </div>
+      </div>
+    </div>
+    }
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end">
+        <button
+          type="button"
+          (click)="closeDetailsDialog()"
+          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+        >
+          Close
+        </button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

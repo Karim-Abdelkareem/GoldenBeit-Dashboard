@@ -1,0 +1,501 @@
+<div class="my-6 p-4">
+  <div class="flex justify-between items-center border-b border-gray-300 pb-4">
+    <h1 class="text-3xl font-bold text-dark-green">Estate Units</h1>
+  </div>
+
+  @if (loading()) {
+  <div class="flex justify-center items-center py-12">
+    <p class="text-gray-500">Loading estate units...</p>
+  </div>
+  } @else {
+  <div class="md:container md:mx-auto mx-4 md:my-20 my-10">
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 grid-cols-1 gap-6 px-4">
+      @for (unit of estateUnits(); track unit.id) {
+      <div
+        class="col-span-1 flex flex-col gap-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200 overflow-hidden"
+      >
+        <!-- Unit Image Placeholder -->
+        <div class="relative w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+          <lucide-angular [img]="Home" class="w-16 h-16 text-gray-400" />
+          <!-- Action Buttons -->
+          <div class="absolute top-2 right-2 flex gap-2">
+            <lucide-angular
+              [img]="Eye"
+              class="text-blue-600 cursor-pointer bg-white rounded-md p-1.5 shadow-md hover:bg-blue-50 transition-colors"
+              size="24"
+              (click)="viewDetails(unit)"
+              title="View Details"
+            ></lucide-angular>
+            <lucide-angular
+              [img]="Pencil"
+              class="text-black cursor-pointer bg-white rounded-md p-1.5 shadow-md hover:bg-gray-50 transition-colors"
+              size="24"
+              (click)="editUnit(unit)"
+              title="Edit"
+            ></lucide-angular>
+            <lucide-angular
+              [img]="Trash2"
+              class="text-red-500 cursor-pointer bg-white rounded-md p-1.5 shadow-md hover:bg-red-50 transition-colors"
+              size="24"
+              (click)="deleteUnit(unit)"
+              title="Delete"
+            ></lucide-angular>
+          </div>
+          <!-- Status Badge -->
+          @if (unit.status !== undefined) {
+          <div
+            class="absolute top-2 left-2 px-3 py-1 rounded-full text-xs font-semibold"
+            [ngClass]="getStatusBadge(unit.status).class"
+          >
+            {{ getStatusBadge(unit.status).text }}
+          </div>
+          }
+          <!-- Approval Badge -->
+          @if (unit.isApproved !== undefined) {
+          <div class="absolute bottom-2 right-2">
+            @if (unit.isApproved) {
+            <lucide-angular [img]="CheckCircle2" class="w-6 h-6 text-green-500 bg-white rounded-full" />
+            } @else {
+            <lucide-angular [img]="XCircle" class="w-6 h-6 text-red-500 bg-white rounded-full" />
+            }
+          </div>
+          }
+        </div>
+
+        <!-- Unit Info -->
+        <div class="flex flex-col gap-3 p-4">
+          <!-- Title -->
+          <div>
+            <h3 class="ibm-plex-sans-arabic-bold text-lg md:text-xl text-gray-800 line-clamp-1">
+              {{ unit.titleEn || unit.titleAr || 'Untitled Unit' }}
+            </h3>
+            @if (unit.titleAr && unit.titleEn) {
+            <p class="ibm-plex-sans-arabic-regular text-sm text-gray-600 mt-1 line-clamp-1">
+              {{ unit.titleAr }}
+            </p>
+            }
+          </div>
+
+          <!-- Unit & Building Numbers -->
+          <div class="flex items-center gap-4 text-sm text-gray-600">
+            @if (unit.unitNumber) {
+            <div class="flex items-center gap-1">
+              <lucide-angular [img]="Home" class="w-4 h-4" />
+              <span>Unit: {{ unit.unitNumber }}</span>
+            </div>
+            }
+            @if (unit.buildingNumber) {
+            <div class="flex items-center gap-1">
+              <lucide-angular [img]="Building2" class="w-4 h-4" />
+              <span>Bldg: {{ unit.buildingNumber }}</span>
+            </div>
+            }
+          </div>
+
+          <!-- Location -->
+          @if (unit.location || unit.cityNameEn) {
+          <div class="flex items-center gap-2 text-sm text-gray-600">
+            <lucide-angular [img]="MapPin" class="w-4 h-4 text-gray-500" />
+            <span class="line-clamp-1">{{ unit.location || unit.cityNameEn || 'N/A' }}</span>
+          </div>
+          }
+
+          <!-- Area -->
+          @if (unit.area) {
+          <div class="flex items-center gap-2 text-sm text-gray-600">
+            <lucide-angular [img]="Ruler" class="w-4 h-4 text-gray-500" />
+            <span>{{ formatArea(unit.area) }}</span>
+          </div>
+          }
+
+          <!-- Price -->
+          @if (unit.totalPrice !== undefined) {
+          <div class="flex items-center gap-2 pt-2 border-t border-gray-200">
+            <lucide-angular [img]="DollarSign" class="w-5 h-5 text-green-600" />
+            <span class="ibm-plex-sans-arabic-bold text-lg text-green-600">
+              {{ formatPrice(unit.totalPrice, unit.totalPriceCurrency) }}
+            </span>
+          </div>
+          }
+
+          <!-- Room Info -->
+          @if (unit.roomCount || unit.bathCount) {
+          <div class="flex items-center gap-4 text-xs text-gray-500 pt-1">
+            @if (unit.roomCount) {
+            <span>{{ unit.roomCount }} Bedrooms</span>
+            }
+            @if (unit.bathCount) {
+            <span>{{ unit.bathCount }} Bathrooms</span>
+            }
+            @if (unit.kitchenCount) {
+            <span>{{ unit.kitchenCount }} Kitchens</span>
+            }
+          </div>
+          }
+        </div>
+      </div>
+      } @empty {
+      <div class="col-span-full text-center py-12">
+        <lucide-angular [img]="Home" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <p class="text-gray-500 text-lg">No estate units found</p>
+      </div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages() > 1) {
+    <div class="flex justify-center items-center gap-2 my-20">
+      <!-- Previous Button -->
+      <button
+        (click)="goToPrevious()"
+        [disabled]="page() === 1"
+        class="flex items-center gap-2 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:text-gray-600 transition-colors"
+      >
+        <lucide-angular
+          [img]="ChevronLeft"
+          class="w-5 h-5"
+          [class.text-gray-400]="page() !== 1"
+          [class.text-gray-300]="page() === 1"
+        ></lucide-angular>
+        <span class="ibm-plex-sans-arabic-medium text-sm">Previous</span>
+      </button>
+
+      <!-- Page Numbers -->
+      <div class="flex items-center gap-2">
+        <!-- First page if not in visible range -->
+        @if (showStartEllipsis()) {
+        <button
+          (click)="goToPage(1)"
+          class="px-3 py-1.5 rounded-lg bg-[#E8F5E9] text-[#0B3122] ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors"
+        >
+          1
+        </button>
+        <span class="text-gray-400">...</span>
+        }
+
+        <!-- Visible page numbers -->
+        @for (pageNum of visiblePages(); track pageNum) {
+        <button
+          (click)="goToPage(pageNum)"
+          [class.bg-[#0B3122]]="page() === pageNum"
+          [class.text-white]="page() === pageNum"
+          [class.border]="page() === pageNum"
+          [class.border-yellow-400]="page() === pageNum"
+          [class.bg-[#E8F5E9]]="page() !== pageNum"
+          [class.text-[#0B3122]]="page() !== pageNum"
+          class="px-3 py-1.5 rounded-lg ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors"
+        >
+          {{ pageNum }}
+        </button>
+        }
+
+        <!-- Last page if not in visible range -->
+        @if (showEndEllipsis()) {
+        <span class="text-gray-400">...</span>
+        <button
+          (click)="goToPage(totalPages())"
+          class="px-3 py-1.5 rounded-lg bg-[#E8F5E9] text-[#0B3122] ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors"
+        >
+          {{ totalPages() }}
+        </button>
+        }
+      </div>
+
+      <!-- Next Button -->
+      <button
+        (click)="goToNext()"
+        [disabled]="page() === totalPages()"
+        class="flex items-center gap-2 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:text-gray-600 transition-colors"
+      >
+        <span class="ibm-plex-sans-arabic-medium text-sm">Next</span>
+        <lucide-angular
+          [img]="ChevronRight"
+          class="w-5 h-5"
+          [class.text-gray-400]="page() !== totalPages()"
+          [class.text-gray-300]="page() === totalPages()"
+        ></lucide-angular>
+      </button>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Details Dialog -->
+  <p-dialog
+    [(visible)]="detailsDialogVisible"
+    [modal]="true"
+    [style]="{ width: '800px', maxWidth: '90vw' }"
+    header="Estate Unit Details"
+    [draggable]="false"
+    [resizable]="false"
+    (onHide)="closeDetailsDialog()"
+  >
+    @if (selectedUnit) {
+    <div class="flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
+      <!-- Basic Information -->
+      <div class="grid grid-cols-2 gap-4 pb-4 border-b border-gray-200">
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Title (English)</p>
+          <p class="text-gray-800 font-medium">{{ selectedUnit.titleEn || 'N/A' }}</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Title (Arabic)</p>
+          <p class="text-gray-800 font-medium">{{ selectedUnit.titleAr || 'N/A' }}</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Unit Number</p>
+          <p class="text-gray-800">{{ selectedUnit.unitNumber || 'N/A' }}</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Building Number</p>
+          <p class="text-gray-800">{{ selectedUnit.buildingNumber || 'N/A' }}</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Area</p>
+          <p class="text-gray-800">{{ formatArea(selectedUnit.area) }}</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Status</p>
+          <span
+            class="px-2 py-1 rounded-full text-xs font-semibold"
+            [ngClass]="getStatusBadge(selectedUnit.status).class"
+          >
+            {{ getStatusBadge(selectedUnit.status).text }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Location Information -->
+      @if (selectedUnit.location || selectedUnit.cityNameEn || selectedUnit.mainAddress) {
+      <div class="pb-4 border-b border-gray-200">
+        <h4 class="font-semibold text-gray-800 mb-3">Location</h4>
+        <div class="grid grid-cols-2 gap-4">
+          @if (selectedUnit.cityNameEn) {
+          <div>
+            <p class="text-sm text-gray-500 mb-1">City</p>
+            <p class="text-gray-800">{{ selectedUnit.cityNameEn }} {{ selectedUnit.cityNameAr ? '(' + selectedUnit.cityNameAr + ')' : '' }}</p>
+          </div>
+          }
+          @if (selectedUnit.stageNameEn) {
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Stage</p>
+            <p class="text-gray-800">{{ selectedUnit.stageNameEn }} {{ selectedUnit.stageNameAr ? '(' + selectedUnit.stageNameAr + ')' : '' }}</p>
+          </div>
+          }
+          @if (selectedUnit.location) {
+          <div class="col-span-2">
+            <p class="text-sm text-gray-500 mb-1">Location</p>
+            <p class="text-gray-800">{{ selectedUnit.location }}</p>
+          </div>
+          }
+          @if (selectedUnit.mainAddress) {
+          <div class="col-span-2">
+            <p class="text-sm text-gray-500 mb-1">Main Address</p>
+            <p class="text-gray-800">{{ selectedUnit.mainAddress }}</p>
+          </div>
+          }
+          @if (selectedUnit.latitude && selectedUnit.longitude) {
+          <div class="col-span-2">
+            <p class="text-sm text-gray-500 mb-1">Coordinates</p>
+            <p class="text-gray-800">{{ selectedUnit.latitude }}, {{ selectedUnit.longitude }}</p>
+          </div>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Property Details -->
+      @if (selectedUnit.roomCount || selectedUnit.bathCount || selectedUnit.kitchenCount || selectedUnit.view) {
+      <div class="pb-4 border-b border-gray-200">
+        <h4 class="font-semibold text-gray-800 mb-3">Property Details</h4>
+        <div class="grid grid-cols-2 gap-4">
+          @if (selectedUnit.roomCount) {
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Bedrooms</p>
+            <p class="text-gray-800">{{ selectedUnit.roomCount }}</p>
+          </div>
+          }
+          @if (selectedUnit.bathCount) {
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Bathrooms</p>
+            <p class="text-gray-800">{{ selectedUnit.bathCount }}</p>
+          </div>
+          }
+          @if (selectedUnit.kitchenCount) {
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Kitchens</p>
+            <p class="text-gray-800">{{ selectedUnit.kitchenCount }}</p>
+          </div>
+          }
+          @if (selectedUnit.view) {
+          <div>
+            <p class="text-sm text-gray-500 mb-1">View</p>
+            <p class="text-gray-800">{{ selectedUnit.view }}</p>
+          </div>
+          }
+          @if (selectedUnit.character) {
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Character</p>
+            <p class="text-gray-800">{{ selectedUnit.character }}</p>
+          </div>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Pricing Information -->
+      @if (selectedUnit.totalPrice || selectedUnit.paidPrice || selectedUnit.remainingPrice) {
+      <div class="pb-4 border-b border-gray-200">
+        <h4 class="font-semibold text-gray-800 mb-3">Pricing</h4>
+        <div class="grid grid-cols-2 gap-4">
+          @if (selectedUnit.totalPrice) {
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Total Price</p>
+            <p class="text-gray-800 font-semibold text-lg">{{ formatPrice(selectedUnit.totalPrice, selectedUnit.totalPriceCurrency) }}</p>
+          </div>
+          }
+          @if (selectedUnit.paidPrice) {
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Paid Price</p>
+            <p class="text-gray-800">{{ formatPrice(selectedUnit.paidPrice, selectedUnit.paidPriceCurrency) }}</p>
+          </div>
+          }
+          @if (selectedUnit.remainingPrice) {
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Remaining Price</p>
+            <p class="text-gray-800">{{ formatPrice(selectedUnit.remainingPrice, selectedUnit.remainingPriceCurrency) }}</p>
+          </div>
+          }
+          @if (selectedUnit.meterPrice) {
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Price per m²</p>
+            <p class="text-gray-800">{{ formatPrice(selectedUnit.meterPrice, selectedUnit.meterPriceCurrency) }}</p>
+          </div>
+          }
+          @if (selectedUnit.overPrice) {
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Over Price</p>
+            <p class="text-gray-800">{{ formatPrice(selectedUnit.overPrice, selectedUnit.overPriceCurrency) }}</p>
+          </div>
+          }
+          @if (selectedUnit.paymentMethod !== undefined) {
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Payment Method</p>
+            <p class="text-gray-800">{{ selectedUnit.paymentMethod === 0 ? 'Cash' : 'Installment' }}</p>
+          </div>
+          }
+          @if (selectedUnit.installmentPeriod) {
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Installment Period</p>
+            <p class="text-gray-800">{{ selectedUnit.installmentPeriod }}</p>
+          </div>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Descriptions -->
+      @if (selectedUnit.descriptionEn || selectedUnit.descriptionAr) {
+      <div class="pb-4 border-b border-gray-200">
+        <h4 class="font-semibold text-gray-800 mb-3">Description</h4>
+        @if (selectedUnit.descriptionEn) {
+        <div class="mb-3">
+          <p class="text-sm text-gray-500 mb-1">English</p>
+          <p class="text-gray-800 whitespace-pre-wrap">{{ selectedUnit.descriptionEn }}</p>
+        </div>
+        }
+        @if (selectedUnit.descriptionAr) {
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Arabic</p>
+          <p class="text-gray-800 whitespace-pre-wrap" dir="rtl">{{ selectedUnit.descriptionAr }}</p>
+        </div>
+        }
+      </div>
+      }
+
+      <!-- Additional Information -->
+      <div class="grid grid-cols-2 gap-4">
+        @if (selectedUnit.phoneNumber) {
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Phone Number</p>
+          <p class="text-gray-800">{{ selectedUnit.phoneNumber }}</p>
+        </div>
+        }
+        @if (selectedUnit.viewCount !== undefined) {
+        <div>
+          <p class="text-sm text-gray-500 mb-1">View Count</p>
+          <p class="text-gray-800">{{ selectedUnit.viewCount }}</p>
+        </div>
+        }
+        @if (selectedUnit.isApproved !== undefined) {
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Approved</p>
+          <p class="text-gray-800">{{ selectedUnit.isApproved ? 'Yes' : 'No' }}</p>
+        </div>
+        }
+        @if (selectedUnit.viewable !== undefined) {
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Viewable</p>
+          <p class="text-gray-800">{{ selectedUnit.viewable ? 'Yes' : 'No' }}</p>
+        </div>
+        }
+        @if (selectedUnit.approverMessage) {
+        <div class="col-span-2">
+          <p class="text-sm text-gray-500 mb-1">Approver Message</p>
+          <p class="text-gray-800">{{ selectedUnit.approverMessage }}</p>
+        </div>
+        }
+      </div>
+    </div>
+    }
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end gap-2">
+        <button
+          type="button"
+          (click)="closeDetailsDialog()"
+          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+        >
+          Close
+        </button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Delete Confirmation Dialog -->
+  <p-dialog
+    [(visible)]="deleteDialogVisible"
+    [modal]="true"
+    [style]="{ width: '450px' }"
+    header="Confirm Delete"
+    [draggable]="false"
+    [resizable]="false"
+  >
+    <div class="flex flex-col gap-4">
+      <p class="text-gray-700">
+        Are you sure you want to delete
+        <span class="font-semibold" style="color: #e2b43a"
+          >{{ selectedUnit?.titleEn || selectedUnit?.unitNumber || 'this estate unit' }}</span
+        >?
+      </p>
+      <p class="text-sm text-gray-500">This action cannot be undone.</p>
+    </div>
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end gap-2">
+        <button
+          type="button"
+          (click)="cancelDelete()"
+          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="confirmDelete()"
+          class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+        >
+          Delete
+        </button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

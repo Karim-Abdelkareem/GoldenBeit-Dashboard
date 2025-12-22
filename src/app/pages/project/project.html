@@ -1,0 +1,336 @@
+<div class="my-6 p-4">
+  <div class="flex justify-between items-center border-b border-gray-300 pb-4">
+    <h1 class="text-3xl font-bold text-dark-green">Projects</h1>
+    <button (click)="addProject()" class="gradient-button flex items-center gap-2">
+      <lucide-angular [img]="Plus" class="w-6 h-6" />
+      Add Project
+    </button>
+  </div>
+
+  @if (loading()) {
+  <div class="flex justify-center items-center py-12">
+    <p class="text-gray-500">Loading projects...</p>
+  </div>
+  } @else {
+  <div class="md:container md:mx-auto mx-4 md:my-20 my-10">
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 grid-cols-1 gap-6 px-4">
+      @for (project of projects(); track project.id) {
+      <div class="col-span-1 flex flex-col gap-4">
+        <div class="relative rounded-md overflow-hidden">
+          <img
+            [src]="project.imagePath || 'blog/3.jpg'"
+            [alt]="project.nameEn"
+            class="w-full h-64 object-cover"
+          />
+          <div class="absolute top-1 right-1 flex gap-2 px-3 py-2 rounded-md">
+            <lucide-angular
+              [img]="Eye"
+              class="text-blue-600 cursor-pointer bg-white rounded-md p-1.5 shadow-md hover:bg-blue-50 transition-colors"
+              size="24"
+              (click)="viewDetails(project)"
+              title="View Details"
+            ></lucide-angular>
+            <lucide-angular
+              [img]="Pencil"
+              class="text-black cursor-pointer bg-white rounded-md p-1.5 shadow-md hover:bg-gray-50 transition-colors"
+              size="24"
+              (click)="editProject(project)"
+              title="Edit"
+            ></lucide-angular>
+            <lucide-angular
+              [img]="Trash2"
+              class="text-red-500 cursor-pointer bg-white rounded-md p-1.5 shadow-md hover:bg-red-50 transition-colors"
+              size="24"
+              (click)="deleteProject(project)"
+              title="Delete"
+            ></lucide-angular>
+          </div>
+        </div>
+        <div class="flex flex-col justify-between gap-4">
+          <div>
+            <h3 class="ibm-plex-sans-arabic-bold text-lg md:text-xl text-gray-800">
+              {{ project.nameEn || project.nameAr }}
+            </h3>
+            @if (project.subNameEn || project.subNameAr) {
+            <p class="ibm-plex-sans-arabic-regular text-sm text-gray-600 mt-1">
+              {{ project.subNameEn || project.subNameAr }}
+            </p>
+            } @if (project.nameAr && project.nameAr !== project.nameEn) {
+            <p class="ibm-plex-sans-arabic-regular text-sm text-gray-600 mt-1" dir="rtl">
+              {{ project.nameAr }}
+            </p>
+            }
+          </div>
+          <p class="ibm-plex-sans-arabic-regular text-gray-500 text-sm text-ellipsis line-clamp-3">
+            {{ project.descriptionEn || project.descriptionAr }}
+          </p>
+          <p class="ibm-plex-sans-arabic-regular text-gray-500 text-xs">
+            {{ formatDate(project.createdOn) }}
+          </p>
+        </div>
+      </div>
+      } @empty {
+      <div class="col-span-full text-center py-12">
+        <lucide-angular [img]="FolderKanban" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <p class="text-gray-500 text-lg">No projects found</p>
+      </div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages() > 1) {
+    <div class="flex justify-center items-center gap-2 my-20">
+      <!-- Previous Button -->
+      <button
+        (click)="goToPrevious()"
+        [disabled]="page() === 1"
+        class="flex items-center gap-2 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:text-gray-600 transition-colors"
+      >
+        <lucide-angular
+          [img]="ChevronLeft"
+          class="w-5 h-5"
+          [class.text-gray-400]="page() !== 1"
+          [class.text-gray-300]="page() === 1"
+        ></lucide-angular>
+        <span class="ibm-plex-sans-arabic-medium text-sm">Previous</span>
+      </button>
+
+      <!-- Page Numbers -->
+      <div class="flex items-center gap-2">
+        <!-- First page if not in visible range -->
+        @if (showStartEllipsis()) {
+        <button
+          (click)="goToPage(1)"
+          class="px-3 py-1.5 rounded-lg bg-[#E8F5E9] text-[#0B3122] ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors"
+        >
+          1
+        </button>
+        <span class="text-gray-400">...</span>
+        }
+
+        <!-- Visible page numbers -->
+        @for (pageNum of visiblePages(); track pageNum) {
+        <button
+          (click)="goToPage(pageNum)"
+          [class.bg-[#0B3122]]="page() === pageNum"
+          [class.text-white]="page() === pageNum"
+          [class.border]="page() === pageNum"
+          [class.border-yellow-400]="page() === pageNum"
+          [class.bg-[#E8F5E9]]="page() !== pageNum"
+          [class.text-[#0B3122]]="page() !== pageNum"
+          class="px-3 py-1.5 rounded-lg ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors"
+        >
+          {{ pageNum }}
+        </button>
+        }
+
+        <!-- Last page if not in visible range -->
+        @if (showEndEllipsis()) {
+        <span class="text-gray-400">...</span>
+        <button
+          (click)="goToPage(totalPages())"
+          class="px-3 py-1.5 rounded-lg bg-[#E8F5E9] text-[#0B3122] ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors"
+        >
+          {{ totalPages() }}
+        </button>
+        }
+      </div>
+
+      <!-- Next Button -->
+      <button
+        (click)="goToNext()"
+        [disabled]="page() === totalPages()"
+        class="flex items-center gap-2 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:text-gray-600 transition-colors"
+      >
+        <span class="ibm-plex-sans-arabic-medium text-sm">Next</span>
+        <lucide-angular
+          [img]="ChevronRight"
+          class="w-5 h-5"
+          [class.text-gray-400]="page() !== totalPages()"
+          [class.text-gray-300]="page() === totalPages()"
+        ></lucide-angular>
+      </button>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Details Dialog -->
+  <p-dialog
+    [(visible)]="detailsDialogVisible"
+    [modal]="true"
+    [style]="{ width: '900px', maxWidth: '95vw' }"
+    header="Project Details"
+    [draggable]="false"
+    [resizable]="false"
+    (onHide)="closeDetailsDialog()"
+  >
+    @if (selectedProject) {
+    <div class="flex flex-col gap-6">
+      <!-- Image -->
+      @if (selectedProject.imagePath) {
+      <div class="w-full">
+        <img
+          [src]="selectedProject.imagePath"
+          [alt]="selectedProject.nameEn"
+          class="w-full h-72 object-cover rounded-lg border border-gray-200 shadow-sm"
+        />
+      </div>
+      }
+
+      <!-- Basic Information -->
+      <div class="grid grid-cols-2 gap-6 pb-6 border-b border-gray-200">
+        <div class="space-y-4">
+          <div>
+            <p class="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
+              Name (English)
+            </p>
+            <p class="text-gray-800 font-semibold text-lg">{{ selectedProject.nameEn || 'N/A' }}</p>
+          </div>
+          @if (selectedProject.subNameEn) {
+          <div>
+            <p class="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
+              Sub Name (English)
+            </p>
+            <p class="text-gray-800">{{ selectedProject.subNameEn }}</p>
+          </div>
+          }
+        </div>
+        <div class="space-y-4" dir="rtl">
+          <div>
+            <p class="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
+              الاسم (العربية)
+            </p>
+            <p class="text-gray-800 font-semibold text-lg">{{ selectedProject.nameAr || 'N/A' }}</p>
+          </div>
+          @if (selectedProject.subNameAr) {
+          <div>
+            <p class="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
+              الاسم الفرعي (العربية)
+            </p>
+            <p class="text-gray-800">{{ selectedProject.subNameAr }}</p>
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Descriptions -->
+      @if (selectedProject.descriptionEn || selectedProject.descriptionAr) {
+      <div class="pb-6 border-b border-gray-200">
+        <h4 class="font-semibold text-gray-800 mb-4 text-lg" style="color: #0d5a4b">Description</h4>
+        <div class="grid grid-cols-2 gap-6">
+          @if (selectedProject.descriptionEn) {
+          <div>
+            <p class="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">English</p>
+            <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">
+              {{ selectedProject.descriptionEn }}
+            </p>
+          </div>
+          } @if (selectedProject.descriptionAr) {
+          <div dir="rtl">
+            <p class="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">العربية</p>
+            <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">
+              {{ selectedProject.descriptionAr }}
+            </p>
+          </div>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Includes -->
+      @if (selectedProject.includesEn || selectedProject.includesAr) {
+      <div class="pb-6 border-b border-gray-200">
+        <h4 class="font-semibold text-gray-800 mb-4 text-lg" style="color: #0d5a4b">Includes</h4>
+        <div class="grid grid-cols-2 gap-6">
+          @if (selectedProject.includesEn) {
+          <div>
+            <p class="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide">English</p>
+            <ul class="space-y-3">
+              @for (item of parseIncludes(selectedProject.includesEn); track $index) {
+              <li class="flex items-start gap-3">
+                <span class="text-[#0d5a4b] font-bold mt-1">•</span>
+                <span class="text-gray-700 leading-relaxed flex-1">{{ item }}</span>
+              </li>
+              }
+            </ul>
+          </div>
+          } @if (selectedProject.includesAr) {
+          <div dir="rtl">
+            <p class="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide">العربية</p>
+            <ul class="space-y-3">
+              @for (item of parseIncludes(selectedProject.includesAr); track $index) {
+              <li class="flex items-start gap-3">
+                <span class="text-[#0d5a4b] font-bold mt-1">•</span>
+                <span class="text-gray-700 leading-relaxed flex-1">{{ item }}</span>
+              </li>
+              }
+            </ul>
+          </div>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Date -->
+      <div class="flex items-center gap-2 pt-2">
+        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Created On</p>
+        <p class="text-gray-600">{{ formatDate(selectedProject.createdOn) }}</p>
+      </div>
+    </div>
+    }
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end">
+        <button
+          type="button"
+          (click)="closeDetailsDialog()"
+          class="px-6 py-2 rounded-md text-white font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+          style="background-color: #0d5a4b"
+          onmouseover="this.style.backgroundColor='#0f6b5a'"
+          onmouseout="this.style.backgroundColor='#0d5a4b'"
+        >
+          Close
+        </button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Delete Confirmation Dialog -->
+  <p-dialog
+    [(visible)]="deleteDialogVisible"
+    [modal]="true"
+    [style]="{ width: '450px' }"
+    header="Confirm Delete"
+    [draggable]="false"
+    [resizable]="false"
+  >
+    <div class="flex flex-col gap-4">
+      <p class="text-gray-700">
+        Are you sure you want to delete
+        <span class="font-semibold" style="color: #e2b43a">{{
+          selectedProject?.nameEn || selectedProject?.nameAr || 'this project'
+        }}</span
+        >?
+      </p>
+      <p class="text-sm text-gray-500">This action cannot be undone.</p>
+    </div>
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end gap-2">
+        <button
+          type="button"
+          (click)="cancelDelete()"
+          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="confirmDelete()"
+          class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+        >
+          Delete
+        </button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

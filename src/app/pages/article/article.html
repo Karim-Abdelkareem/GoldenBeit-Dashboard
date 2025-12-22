@@ -1,0 +1,170 @@
+<div class="my-6 p-4">
+  <div class="flex justify-between items-center border-b border-gray-300 pb-4">
+    <h1 class="text-3xl font-bold text-dark-green">Articles</h1>
+    <button class="gradient-button flex items-center gap-2">
+      <lucide-angular [img]="Plus" class="w-6 h-6" />
+      Add Article
+    </button>
+  </div>
+  <div class="md:container md:mx-auto mx-4 md:my-20 my-10">
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 grid-cols-1 gap-16 px-4">
+      @for (article of articles(); track article.id) {
+
+      <div class="col-span-1 flex flex-col gap-4">
+        <div class="relative rounded-md overflow-hidden">
+          <img
+            [src]="article.imagePath || 'blog/3.jpg'"
+            alt="blog-1"
+            class="w-full h-full object-cover"
+          />
+          <div class="absolute top-1 right-1 flex gap-2 px-3 py-2 rounded-md">
+            <lucide-angular
+              [img]="Pencil"
+              class="text-black cursor-pointer bg-white rounded-md p-1"
+              size="26"
+              (click)="editArticle(article)"
+            ></lucide-angular>
+            <lucide-angular
+              [img]="Trash2"
+              class="text-red-500 cursor-pointer bg-white rounded-md p-1"
+              size="26"
+              (click)="deleteArticle(article)"
+            ></lucide-angular>
+          </div>
+          <div
+            class="absolute bottom-4 left-4 bg-white px-3 py-2 rounded-md cursor-pointer group"
+            (click)="articleDetails(article)"
+          >
+            <lucide-angular
+              [img]="MoveUpLeft"
+              class="text-black group-hover:scale-110 transition-all duration-300"
+              size="20"
+            ></lucide-angular>
+          </div>
+        </div>
+        <div class="flex flex-col justify-between gap-6">
+          <p class="ibm-plex-sans-arabic-bold text-lg md:text-xl">
+            {{ article.titleEn }}
+          </p>
+          <p class="ibm-plex-sans-arabic-regular text-gray-500 text-sm text-ellipsis line-clamp-3">
+            {{ article.bodyEn }}
+          </p>
+          <p class="ibm-plex-sans-arabic-regular text-gray-500 text-sm">
+            {{ article.createdAt | date : 'dd/MM/yyyy' }}{{ today | date : 'dd/MM/yyyy' }}
+          </p>
+        </div>
+      </div>
+      }
+    </div>
+
+    <div class="flex justify-center items-center gap-2 my-20">
+      <!-- Previous Button -->
+      <button
+        (click)="goToPrevious()"
+        [disabled]="page() === 1"
+        class="flex items-center gap-2 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:text-gray-600 transition-colors"
+      >
+        <lucide-angular
+          [img]="ChevronLeft"
+          class="w-5 h-5"
+          [class.text-gray-400]="page() !== 1"
+          [class.text-gray-300]="page() === 1"
+        ></lucide-angular>
+        <span class="ibm-plex-sans-arabic-medium text-sm">Previous</span>
+      </button>
+
+      <!-- Page Numbers -->
+      <div class="flex items-center gap-2">
+        <!-- First page if not in visible range -->
+        @if (showStartEllipsis()) {
+        <button
+          (click)="goToPage(1)"
+          class="px-3 py-1.5 rounded-lg bg-[#E8F5E9] text-[#0B3122] ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors"
+        >
+          1
+        </button>
+        <span class="text-gray-400">...</span>
+        }
+
+        <!-- Visible page numbers -->
+        @for (pageNum of visiblePages(); track pageNum) {
+        <button
+          (click)="goToPage(pageNum)"
+          [class.bg-[#0B3122]]="page() === pageNum"
+          [class.text-white]="page() === pageNum"
+          [class.border]="page() === pageNum"
+          [class.border-yellow-400]="page() === pageNum"
+          [class.bg-[#E8F5E9]]="page() !== pageNum"
+          [class.text-[#0B3122]]="page() !== pageNum"
+          class="px-3 py-1.5 rounded-lg ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors"
+        >
+          {{ pageNum }}
+        </button>
+        }
+
+        <!-- Last page if not in visible range -->
+        @if (showEndEllipsis()) {
+        <span class="text-gray-400">...</span>
+        <button
+          (click)="goToPage(totalPages())"
+          class="px-3 py-1.5 rounded-lg bg-[#E8F5E9] text-[#0B3122] ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors"
+        >
+          {{ totalPages() }}
+        </button>
+        }
+      </div>
+
+      <!-- Next Button -->
+      <button
+        (click)="goToNext()"
+        [disabled]="page() === totalPages()"
+        class="flex items-center gap-2 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:text-gray-600 transition-colors"
+      >
+        <span class="ibm-plex-sans-arabic-medium text-sm">Next</span>
+        <lucide-angular
+          [img]="ChevronRight"
+          class="w-5 h-5"
+          [class.text-gray-400]="page() !== totalPages()"
+          [class.text-gray-300]="page() === totalPages()"
+        ></lucide-angular>
+      </button>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Dialog -->
+  <p-dialog
+    [(visible)]="deleteDialogVisible"
+    [modal]="true"
+    [style]="{ width: '450px' }"
+    header="Confirm Delete"
+    [draggable]="false"
+    [resizable]="false"
+  >
+    <div class="flex flex-col gap-4">
+      <p class="text-gray-700">
+        Are you sure you want to delete
+        <span class="font-semibold" style="color: #e2b43a">{{ selectedArticle?.titleEn }}</span
+        >?
+      </p>
+      <p class="text-sm text-gray-500">This action cannot be undone.</p>
+    </div>
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end gap-2">
+        <button
+          type="button"
+          (click)="cancelDelete()"
+          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="confirmDelete()"
+          class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+        >
+          Delete
+        </button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

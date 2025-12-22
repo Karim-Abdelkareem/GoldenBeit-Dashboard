@@ -1,0 +1,104 @@
+<div class="container mx-auto p-6 max-w-7xl">
+  <div class="flex justify-between items-center border-b border-gray-200 pb-4 my-6">
+    <h1 class="text-3xl font-bold" style="color: #0d5a4b">Article Categories</h1>
+    <button
+      (click)="router.navigate(['/article-categories/add'])"
+      class="px-4 py-2 text-white rounded-md transition-colors"
+      style="background-color: #e2b43a; color: #0a3022"
+      onmouseover="this.style.backgroundColor='#d4a530'"
+      onmouseout="this.style.backgroundColor='#E2B43A'"
+    >
+      Add New Category
+    </button>
+  </div>
+
+  <p-table
+    [value]="categories"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[5, 10, 20]"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    styleClass="p-datatable-striped"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>#</th>
+        <th>ID</th>
+        <th>Name (Arabic)</th>
+        <th>Name (English)</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-category let-i="rowIndex">
+      <tr>
+        <td>{{ i + 1 }}</td>
+        <td class="max-w-16 truncate">{{ category.id }}</td>
+        <td>{{ category.nameAr }}</td>
+        <td>{{ category.nameEn }}</td>
+        <td>
+          <div class="flex gap-2">
+            <button
+              (click)="editCategory(category)"
+              class="p-2 rounded-md transition-colors"
+              style="background-color: #0d5a4b; color: white"
+              onmouseover="this.style.backgroundColor='#0f6b5a'"
+              onmouseout="this.style.backgroundColor='#0D5A4B'"
+              title="Edit"
+            >
+              <lucide-angular [img]="Pencil" class="w-4 h-4" />
+            </button>
+            <button
+              (click)="deleteCategory(category)"
+              class="p-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+              title="Delete"
+            >
+              <lucide-angular [img]="Trash2" class="w-4 h-4" />
+            </button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="4" class="text-center py-4">No categories found</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Delete Confirmation Dialog -->
+  <p-dialog
+    [(visible)]="deleteDialogVisible"
+    [modal]="true"
+    [style]="{ width: '450px' }"
+    header="Confirm Delete"
+    [draggable]="false"
+    [resizable]="false"
+  >
+    <div class="flex flex-col gap-4">
+      <p class="text-gray-700">
+        Are you sure you want to delete
+        <span class="font-semibold" style="color: #e2b43a">{{ selectedCategory?.nameEn }}</span
+        >?
+      </p>
+      <p class="text-sm text-gray-500">This action cannot be undone.</p>
+    </div>
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end gap-2">
+        <button
+          type="button"
+          (click)="cancelDelete()"
+          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="confirmDelete()"
+          class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+        >
+          Delete
+        </button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

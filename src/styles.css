@@ -1,1 +1,182 @@
 /* You can add global styles to this file, and also import other style files */
+@import 'tailwindcss';
+@import '@ngxpert/hot-toast/styles.css';
+
+/* Golden Beit Brand Colors */
+@theme {
+  /* Primary Colors */
+  --color-golden: #e2b43a;
+  --color-golden-rgb: 226, 180, 58;
+  --color-dark-green: #0a3022;
+  --color-dark-green-rgb: 10, 48, 34;
+  --color-dark-teal: #0d5a4b;
+  --color-dark-teal-rgb: 13, 90, 75;
+
+  /* Color Palette */
+  --color-primary: var(--color-golden);
+  --color-secondary: var(--color-dark-teal);
+  --color-accent: var(--color-dark-green);
+
+  /* Tailwind Color Extensions */
+  --color-golden-50: #fef9e7;
+  --color-golden-100: #fef3c7;
+  --color-golden-200: #fde68a;
+  --color-golden-300: #fcd34d;
+  --color-golden-400: #fbbf24;
+  --color-golden-500: #e2b43a;
+  --color-golden-600: #d97706;
+  --color-golden-700: #b45309;
+  --color-golden-800: #92400e;
+  --color-golden-900: #78350f;
+
+  --color-teal-50: #f0fdfa;
+  --color-teal-100: #ccfbf1;
+  --color-teal-200: #99f6e4;
+  --color-teal-300: #5eead4;
+  --color-teal-400: #2dd4bf;
+  --color-teal-500: #14b8a6;
+  --color-teal-600: #0d5a4b;
+  --color-teal-700: #0f766e;
+  --color-teal-800: #115e59;
+  --color-teal-900: #134e4a;
+
+  --color-green-50: #f0fdf4;
+  --color-green-100: #dcfce7;
+  --color-green-200: #bbf7d0;
+  --color-green-300: #86efac;
+  --color-green-400: #4ade80;
+  --color-green-500: #22c55e;
+  --color-green-600: #16a34a;
+  --color-green-700: #15803d;
+  --color-green-800: #166534;
+  --color-green-900: #0a3022;
+}
+
+/* Global Styles */
+:root {
+  --golden: #e2b43a;
+  --dark-green: #0a3022;
+  --dark-teal: #0d5a4b;
+}
+
+/* PrimeNG Theme Override - Golden Beit Colors */
+:root {
+  --p-primary-color: #e2b43a;
+  --p-primary-contrast-color: #0a3022;
+  --p-primary-hover-color: #d4a530;
+  --p-primary-active-color: #c69626;
+  --p-secondary-color: #0d5a4b;
+  --p-secondary-contrast-color: #ffffff;
+  --p-secondary-hover-color: #0f6b5a;
+  --p-secondary-active-color: #0b4a3d;
+  --p-highlight-color: #e2b43a;
+  --p-highlight-contrast-color: #0a3022;
+}
+
+/* Global Button Styles */
+.btn-primary {
+  background-color: #e2b43a;
+  color: #0a3022;
+  border-color: #e2b43a;
+}
+
+.btn-primary:hover {
+  background-color: #d4a530;
+  border-color: #d4a530;
+}
+
+.btn-secondary {
+  background-color: #0d5a4b;
+  color: #ffffff;
+  border-color: #0d5a4b;
+}
+
+.btn-secondary:hover {
+  background-color: #0f6b5a;
+  border-color: #0f6b5a;
+}
+
+/* Focus Ring Colors */
+*:focus {
+  --tw-ring-color: #e2b43a;
+}
+
+.gradient-button {
+  background: linear-gradient(to right, #e1b33a, #eed189);
+  border: 1px solid #0b3122;
+  color: #0b3122;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gradient-button:hover {
+  opacity: 0.95;
+  border-color: #0b3122;
+}
+
+.gradient-button:active,
+.gradient-button-two:active,
+.gradient-button-three:active {
+  opacity: 0.9;
+}
+
+.gradient-button-two {
+  background: #0b3122;
+  border: 1px solid #0b3122;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gradient-button-two:hover {
+  opacity: 0.95;
+  border-color: #0b3122;
+}
+
+.gradient-button-three {
+  background: white;
+  border: 1px solid white;
+  color: #0b3122;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gradient-button-three:hover {
+  opacity: 0.95;
+  border-color: #0b3122;
+}
+
+.gradient-button-four {
+  background: #105a4b;
+  border: 1px solid #105a4b;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gradient-button-four:hover {
+  opacity: 0.95;
+  border-color: #0b3122;
+}
+
+/* Responsive button styles */
+@media (max-width: 768px) {
+  .gradient-button,
+  .gradient-button-two,
+  .gradient-button-three {
+    padding: 0.75rem 1rem;
+    font-size: 14px;
+  }
+}

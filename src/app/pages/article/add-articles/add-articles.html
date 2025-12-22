@@ -1,0 +1,215 @@
+<div class="container mx-auto p-6 max-w-7xl">
+  <h1 class="text-3xl font-bold mb-6">@if (isEdit) { Edit Article } @else { Add New Article }</h1>
+
+  <form [formGroup]="articleForm" (ngSubmit)="onSubmit()" class="space-y-6">
+    <!-- Arabic Title -->
+    <div>
+      <label for="titleAr" class="block text-sm font-medium text-gray-700 mb-2">
+        Title (Arabic) <span class="text-red-500">*</span>
+      </label>
+      <input
+        id="titleAr"
+        type="text"
+        formControlName="titleAr"
+        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        [class.border-red-500]="f['titleAr'].invalid && f['titleAr'].touched"
+      />
+      @if (f['titleAr'].invalid && f['titleAr'].touched) {
+      <p class="mt-1 text-sm text-red-500">Arabic title is required</p>
+      }
+    </div>
+
+    <!-- Arabic Body -->
+    <div>
+      <label for="bodyAr" class="block text-sm font-medium text-gray-700 mb-2">
+        Body (Arabic) <span class="text-red-500">*</span>
+      </label>
+      <textarea
+        id="bodyAr"
+        formControlName="bodyAr"
+        rows="6"
+        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
+        [class.border-red-500]="f['bodyAr'].invalid && f['bodyAr'].touched"
+      ></textarea>
+      @if (f['bodyAr'].invalid && f['bodyAr'].touched) {
+      <p class="mt-1 text-sm text-red-500">Arabic body is required</p>
+      }
+    </div>
+
+    <!-- English Title -->
+    <div>
+      <label for="titleEn" class="block text-sm font-medium text-gray-700 mb-2">
+        Title (English) <span class="text-red-500">*</span>
+      </label>
+      <input
+        id="titleEn"
+        type="text"
+        formControlName="titleEn"
+        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        [class.border-red-500]="f['titleEn'].invalid && f['titleEn'].touched"
+      />
+      @if (f['titleEn'].invalid && f['titleEn'].touched) {
+      <p class="mt-1 text-sm text-red-500">English title is required</p>
+      }
+    </div>
+
+    <!-- English Body -->
+    <div>
+      <label for="bodyEn" class="block text-sm font-medium text-gray-700 mb-2">
+        Body (English) <span class="text-red-500">*</span>
+      </label>
+      <textarea
+        id="bodyEn"
+        formControlName="bodyEn"
+        rows="6"
+        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
+        [class.border-red-500]="f['bodyEn'].invalid && f['bodyEn'].touched"
+      ></textarea>
+      @if (f['bodyEn'].invalid && f['bodyEn'].touched) {
+      <p class="mt-1 text-sm text-red-500">English body is required</p>
+      }
+    </div>
+
+    <!-- Order -->
+    <div>
+      <label for="order" class="block text-sm font-medium text-gray-700 mb-2">
+        Order <span class="text-red-500">*</span>
+      </label>
+      <input
+        id="order"
+        type="number"
+        formControlName="order"
+        min="1"
+        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        [class.border-red-500]="f['order'].invalid && f['order'].touched"
+      />
+      @if (f['order'].invalid && f['order'].touched) {
+      <p class="mt-1 text-sm text-red-500">Order must be at least 1</p>
+      }
+    </div>
+
+    <!-- Category ID -->
+    <div>
+      <label for="categoryId" class="block text-sm font-medium text-gray-700 mb-2">
+        Category ID <span class="text-red-500">*</span>
+      </label>
+      <select
+        name="categoryId"
+        id="categoryId"
+        formControlName="categoryId"
+        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      >
+        <option value="">Select Category</option>
+        @for (category of categories(); track $index) {
+        <option value="{{ category.id }}">{{ category.nameEn }}</option>
+        }
+      </select>
+      @if (f['categoryId'].invalid && f['categoryId'].touched) {
+      <p class="mt-1 text-sm text-red-500">Category ID is required</p>
+      }
+    </div>
+
+    <!-- Image Upload -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2"> Article Image </label>
+      <input
+        #fileInput
+        id="image"
+        type="file"
+        accept="image/*"
+        (change)="onFileSelected($event)"
+        class="hidden"
+      />
+      @if (!imagePreview()) {
+      <!-- Upload Placeholder -->
+      <div
+        (click)="triggerFileInput()"
+        class="max-w-64 h-64 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-colors"
+      >
+        <div class="flex flex-col items-center gap-2">
+          <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+          </div>
+          <p class="text-sm text-gray-500">Click to upload image</p>
+        </div>
+      </div>
+      } @else {
+      <!-- Image Preview -->
+      <div class="relative inline-block group">
+        <div (click)="triggerFileInput()" class="cursor-pointer relative">
+          <img
+            [src]="imagePreview()"
+            alt="Preview"
+            class="max-w-64 h-64 rounded-lg border border-gray-300 shadow-md object-cover hover:opacity-90 transition-opacity"
+          />
+          <div
+            class="absolute inset-0 bg-black/20 bg-opacity-0 hover:bg-opacity-10 rounded-lg transition-all flex items-center justify-center"
+          >
+            <span
+              class="text-white opacity-0 group-hover:opacity-100 transition-opacity text-sm font-medium bg-black/50 bg-opacity-50 px-3 py-1 rounded"
+            >
+              Click to change image
+            </span>
+          </div>
+        </div>
+        <button
+          type="button"
+          (click)="removeImage(); $event.stopPropagation()"
+          class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors shadow-lg z-10"
+          title="Remove image"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      }
+    </div>
+
+    <!-- Submit Button -->
+    <div class="flex gap-4">
+      <button
+        type="submit"
+        [disabled]="articleForm.invalid"
+        class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+      >
+        @if (isEdit) { Update } @else { Submit }
+      </button>
+      <button
+        type="button"
+        (click)="articleForm.reset()"
+        class="px-6 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+      >
+        Reset
+      </button>
+    </div>
+  </form>
+
+  <!-- Debug: Show form value (remove in production) -->
+  @if (articleForm.valid) {
+  <div class="mt-8 p-4 bg-gray-100 rounded-md">
+    <h3 class="font-semibold mb-2">Form Data (JSON):</h3>
+    <pre class="text-xs overflow-auto">{{ articleForm.value | json }}</pre>
+  </div>
+  }
+</div>

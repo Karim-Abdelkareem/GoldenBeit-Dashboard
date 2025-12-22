@@ -1,0 +1,277 @@
+<div class="my-6 p-4">
+  <div class="flex justify-between items-center border-b border-gray-300 pb-4">
+    <h1 class="text-3xl font-bold text-dark-green">FA Questions</h1>
+    <button (click)="addQuestion()" class="gradient-button flex items-center gap-2">
+      <lucide-angular [img]="Plus" class="w-6 h-6" />
+      Add FA Question
+    </button>
+  </div>
+
+  @if (loading()) {
+  <div class="flex justify-center items-center py-12">
+    <p class="text-gray-500">Loading FA Questions...</p>
+  </div>
+  } @else {
+  <div class="md:container md:mx-auto mx-4 md:my-20 my-10">
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 grid-cols-1 gap-6 px-4">
+      @for (question of faQuestions(); track question.id) {
+      <div
+        class="col-span-1 flex flex-col gap-4 bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow"
+      >
+        <!-- Header with Actions -->
+        <div class="flex justify-between items-start">
+          <div class="flex items-center gap-2">
+            <lucide-angular [img]="HelpCircle" class="w-6 h-6 text-[#0d5a4b]" />
+            <h3 class="ibm-plex-sans-arabic-bold text-lg text-gray-800 line-clamp-2">
+              {{ question.questionEn || question.questionAr }}
+            </h3>
+          </div>
+          <div class="flex gap-2 shrink-0">
+            <button
+              (click)="viewQuestion(question)"
+              class="p-2 hover:bg-green-50 rounded-md transition-colors cursor-pointer"
+              title="View details"
+            >
+              <lucide-angular [img]="Eye" class="w-5 h-5 text-green-600" />
+            </button>
+            <button
+              (click)="editQuestion(question)"
+              class="p-2 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
+              title="Edit question"
+            >
+              <lucide-angular [img]="Pencil" class="w-5 h-5" />
+            </button>
+            <button
+              (click)="deleteQuestion(question)"
+              class="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+              title="Delete question"
+            >
+              <lucide-angular [img]="Trash2" class="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Arabic Question -->
+        @if (question.questionAr && question.questionAr !== question.questionEn) {
+        <div class="border-t border-gray-100 pt-3">
+          <p class="text-xs text-gray-500 mb-1" dir="rtl">السؤال</p>
+          <p class="ibm-plex-sans-arabic-regular text-sm text-gray-700 line-clamp-2" dir="rtl">
+            {{ question.questionAr }}
+          </p>
+        </div>
+        }
+
+        <!-- Answer Section -->
+        <div class="flex-1 space-y-3">
+          <div>
+            <p class="text-xs text-gray-500 mb-1">Answer (English)</p>
+            <p class="ibm-plex-sans-arabic-regular text-sm text-gray-700 line-clamp-3">
+              {{ question.answerEn }}
+            </p>
+          </div>
+
+          @if (question.answerAr && question.answerAr !== question.answerEn) {
+          <div class="border-t border-gray-100 pt-3">
+            <p class="text-xs text-gray-500 mb-1" dir="rtl">الإجابة</p>
+            <p class="ibm-plex-sans-arabic-regular text-sm text-gray-700 line-clamp-3" dir="rtl">
+              {{ question.answerAr }}
+            </p>
+          </div>
+          }
+        </div>
+      </div>
+      } @empty {
+      <div class="col-span-full text-center py-12">
+        <lucide-angular [img]="HelpCircle" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <p class="text-gray-500 text-lg">No FA Questions found</p>
+      </div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages() > 1) {
+    <div class="flex justify-center items-center gap-2 my-20">
+      <!-- Previous Button -->
+      <button
+        (click)="goToPrevious()"
+        [disabled]="page() === 1"
+        class="flex items-center gap-2 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:text-gray-600 transition-colors"
+      >
+        <lucide-angular
+          [img]="ChevronLeft"
+          class="w-5 h-5"
+          [class.text-gray-400]="page() !== 1"
+          [class.text-gray-300]="page() === 1"
+        ></lucide-angular>
+        <span class="ibm-plex-sans-arabic-medium text-sm">Previous</span>
+      </button>
+
+      <!-- Page Numbers -->
+      <div class="flex items-center gap-2">
+        <!-- First page if not in visible range -->
+        @if (showStartEllipsis()) {
+        <button
+          (click)="goToPage(1)"
+          class="px-3 py-1.5 rounded-lg bg-[#E8F5E9] text-[#0B3122] ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors"
+        >
+          1
+        </button>
+        <span class="text-gray-400">...</span>
+        }
+
+        <!-- Visible page numbers -->
+        @for (pageNum of visiblePages(); track pageNum) {
+        <button
+          (click)="goToPage(pageNum)"
+          [class.bg-[#0B3122]]="page() === pageNum"
+          [class.text-white]="page() === pageNum"
+          [class.border]="page() === pageNum"
+          [class.border-yellow-400]="page() === pageNum"
+          [class.bg-[#E8F5E9]]="page() !== pageNum"
+          [class.text-[#0B3122]]="page() !== pageNum"
+          class="px-3 py-1.5 rounded-lg ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors"
+        >
+          {{ pageNum }}
+        </button>
+        }
+
+        <!-- Last page if not in visible range -->
+        @if (showEndEllipsis()) {
+        <span class="text-gray-400">...</span>
+        <button
+          (click)="goToPage(totalPages())"
+          class="px-3 py-1.5 rounded-lg bg-[#E8F5E9] text-[#0B3122] ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors"
+        >
+          {{ totalPages() }}
+        </button>
+        }
+      </div>
+
+      <!-- Next Button -->
+      <button
+        (click)="goToNext()"
+        [disabled]="page() === totalPages()"
+        class="flex items-center gap-2 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:text-gray-600 transition-colors"
+      >
+        <span class="ibm-plex-sans-arabic-medium text-sm">Next</span>
+        <lucide-angular
+          [img]="ChevronRight"
+          class="w-5 h-5"
+          [class.text-gray-400]="page() !== totalPages()"
+          [class.text-gray-300]="page() === totalPages()"
+        ></lucide-angular>
+      </button>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Details Dialog -->
+  <p-dialog
+    [(visible)]="detailsDialogVisible"
+    [modal]="true"
+    [style]="{ width: '700px', maxWidth: '90vw' }"
+    header="FA Question Details"
+    [draggable]="false"
+    [resizable]="false"
+    (onHide)="closeDetailsDialog()"
+  >
+    @if (selectedQuestion) {
+    <div class="flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
+      <!-- English Question -->
+      <div class="flex items-start gap-3 pb-3 border-b border-gray-200">
+        <lucide-angular [img]="HelpCircle" class="w-5 h-5 text-gray-500 mt-1" />
+        <div class="flex-1">
+          <p class="text-sm text-gray-500 mb-1">Question (English)</p>
+          <p class="text-gray-800 font-medium">{{ selectedQuestion.questionEn || 'N/A' }}</p>
+        </div>
+      </div>
+
+      <!-- Arabic Question -->
+      @if (selectedQuestion.questionAr) {
+      <div class="flex items-start gap-3 pb-3 border-b border-gray-200">
+        <lucide-angular [img]="HelpCircle" class="w-5 h-5 text-gray-500 mt-1" />
+        <div class="flex-1">
+          <p class="text-sm text-gray-500 mb-1" dir="rtl">السؤال (العربية)</p>
+          <p class="text-gray-800 font-medium" dir="rtl">
+            {{ selectedQuestion.questionAr }}
+          </p>
+        </div>
+      </div>
+      }
+
+      <!-- English Answer -->
+      <div class="flex items-start gap-3 pb-3 border-b border-gray-200">
+        <lucide-angular [img]="MessageSquare" class="w-5 h-5 text-gray-500 mt-1" />
+        <div class="flex-1">
+          <p class="text-sm text-gray-500 mb-1">Answer (English)</p>
+          <p class="text-gray-800 whitespace-pre-wrap">{{ selectedQuestion.answerEn || 'N/A' }}</p>
+        </div>
+      </div>
+
+      <!-- Arabic Answer -->
+      @if (selectedQuestion.answerAr) {
+      <div class="flex items-start gap-3 pt-3">
+        <lucide-angular [img]="MessageSquare" class="w-5 h-5 text-gray-500 mt-1" />
+        <div class="flex-1">
+          <p class="text-sm text-gray-500 mb-1" dir="rtl">الإجابة (العربية)</p>
+          <p class="text-gray-800 whitespace-pre-wrap" dir="rtl">
+            {{ selectedQuestion.answerAr }}
+          </p>
+        </div>
+      </div>
+      }
+    </div>
+    }
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end gap-2">
+        <button
+          type="button"
+          (click)="closeDetailsDialog()"
+          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+        >
+          Close
+        </button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Delete Confirmation Dialog -->
+  <p-dialog
+    [(visible)]="deleteDialogVisible"
+    [modal]="true"
+    [style]="{ width: '450px' }"
+    header="Confirm Delete"
+    [draggable]="false"
+    [resizable]="false"
+  >
+    <div class="flex flex-col gap-4">
+      <p class="text-gray-700">
+        Are you sure you want to delete
+        <span class="font-semibold" style="color: #e2b43a">{{
+          selectedQuestion?.questionEn || selectedQuestion?.questionAr || 'this FA Question'
+        }}</span
+        >?
+      </p>
+      <p class="text-sm text-gray-500">This action cannot be undone.</p>
+    </div>
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end gap-2">
+        <button
+          type="button"
+          (click)="cancelDelete()"
+          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="confirmDelete()"
+          class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+        >
+          Delete
+        </button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

@@ -1,0 +1,19 @@
+.star-button {
+  position: relative;
+}
+
+.star-filled ::ng-deep svg {
+  color: #fbbf24;
+  fill: #fbbf24;
+}
+
+.star-empty ::ng-deep svg {
+  color: #d1d5db;
+  fill: none;
+}
+
+.star-button:hover ::ng-deep svg {
+  color: #fbbf24;
+  fill: #fbbf24;
+}
+

@@ -1,0 +1,104 @@
+<div class="container mx-auto p-6 max-w-7xl">
+  <!-- Back Button -->
+  <button
+    (click)="goBack()"
+    class="flex items-center gap-2 mb-6 text-gray-600 hover:text-red-800 transition-colors cursor-pointer"
+  >
+    <lucide-angular [img]="ArrowLeft" class="w-5 h-5" />
+    <span>Back to Articles</span>
+  </button>
+
+  @if (loading()) {
+  <div class="flex justify-center items-center py-20">
+    <div class="text-gray-500">Loading article...</div>
+  </div>
+  } @else if (article()) {
+  <div class="space-y-6">
+    <!-- Article Image - At the top -->
+    <div class="rounded-lg overflow-hidden shadow-lg mb-8">
+      <img
+        [src]="article()?.imagePath || 'blog/3.jpg'"
+        [alt]="article()?.titleEn"
+        class="w-full h-auto object-cover max-h-96"
+      />
+    </div>
+
+    <!-- Article Metadata -->
+    <div class="border-t border-b border-gray-200 py-6 my-8">
+      <div class="grid md:grid-cols-3 gap-4 text-sm text-gray-600">
+        <div><span class="font-semibold">Order:</span> {{ article()?.order }}</div>
+        <div>
+          <span class="font-semibold">Category ID:</span>
+          <span class="font-mono">{{ article()?.categoryId }}</span>
+        </div>
+        <div>
+          <span class="font-semibold">Article ID:</span>
+          <span class="font-mono">{{ article()?.id }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Article Content - Two Columns -->
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- English Column -->
+      <div class="space-y-6">
+        <!-- English Header -->
+        <div class="border-b border-gray-200 pb-4">
+          <h1 class="text-3xl font-bold mb-2" style="color: #0d5a4b">
+            {{ article()?.titleEn }}
+          </h1>
+          @if (article()?.createdAt) {
+          <p class="text-sm text-gray-500">
+            Published on: {{ article()?.createdAt | date : 'dd/MM/yyyy' }}
+          </p>
+          }
+        </div>
+
+        <!-- English Content -->
+        <div class="prose max-w-none">
+          <p class="text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
+            {{ article()?.bodyEn }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Arabic Column -->
+      <div class="space-y-6 border-l border-gray-200 pl-8" dir="rtl">
+        <!-- Arabic Header -->
+        <div class="border-b border-gray-200 pb-4">
+          <h1 class="text-3xl font-bold mb-2" style="color: #0d5a4b">
+            {{ article()?.titleAr }}
+          </h1>
+          @if (article()?.createdAt) {
+          <p class="text-sm text-gray-500">
+            تاريخ النشر: {{ article()?.createdAt | date : 'dd/MM/yyyy' }}
+          </p>
+          }
+        </div>
+
+        <!-- Arabic Content -->
+        <div class="prose max-w-none">
+          <p class="text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
+            {{ article()?.bodyAr }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  } @else {
+  <div class="flex justify-center items-center py-20">
+    <div class="text-center">
+      <p class="text-gray-500 text-lg mb-4">Article not found</p>
+      <button
+        (click)="goBack()"
+        class="px-4 py-2 rounded-md transition-colors"
+        style="background-color: #e2b43a; color: #0a3022"
+        onmouseover="this.style.backgroundColor='#d4a530'"
+        onmouseout="this.style.backgroundColor='#e2b43a'"
+      >
+        Back to Articles
+      </button>
+    </div>
+  </div>
+  }
+</div>
