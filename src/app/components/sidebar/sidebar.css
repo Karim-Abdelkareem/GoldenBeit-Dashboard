@@ -111,3 +111,64 @@ p-accordion p-accordion-content {
 .sidebar-navigation::-webkit-scrollbar-thumb:hover {
   background-color: rgba(156, 163, 175, 0.7);
 }
+
+/* Active route styling - Light gold color */
+.active-route {
+  background-color: #fef3c7 !important; /* Light gold/amber background */
+  color: #0a3022 !important; /* Dark green text for contrast */
+  font-weight: 500 !important;
+}
+
+.active-route:hover {
+  background-color: #fde68a !important; /* Slightly darker gold on hover */
+}
+
+.active-route lucide-angular,
+.active-route lucide-angular svg {
+  color: #e2b43a !important; /* Gold icon color */
+  fill: #e2b43a !important;
+}
+
+/* Ensure child items in accordion get the active styling */
+p-accordion-content .active-route,
+p-accordion-content div.active-route {
+  background-color: #fef3c7 !important;
+  color: #0a3022 !important;
+  font-weight: 500 !important;
+}
+
+p-accordion-content .active-route:hover,
+p-accordion-content div.active-route:hover {
+  background-color: #fde68a !important;
+}
+
+p-accordion-content .active-route lucide-angular,
+p-accordion-content .active-route lucide-angular svg,
+p-accordion-content div.active-route lucide-angular,
+p-accordion-content div.active-route lucide-angular svg {
+  color: #e2b43a !important;
+  fill: #e2b43a !important;
+}
+
+p-accordion-content .active-route span,
+p-accordion-content div.active-route span {
+  color: #0a3022 !important;
+}
+
+/* Active parent item styling - Light gold color when child is active */
+.active-parent {
+  background-color: #fef3c7 !important; /* Light gold/amber background */
+}
+
+.active-parent:hover {
+  background-color: #fde68a !important; /* Slightly darker gold on hover */
+}
+
+.active-parent-content {
+  color: #0a3022 !important; /* Dark green text for contrast */
+  font-weight: 500 !important;
+}
+
+.active-parent-content lucide-angular {
+  color: #e2b43a !important; /* Gold icon color */
+}

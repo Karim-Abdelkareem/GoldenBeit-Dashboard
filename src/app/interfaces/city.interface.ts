@@ -1,5 +1,5 @@
 export interface CityInterface {
-  id: string;
+  id?: string;
   nameEn: string;
   nameAr: string;
   imagePath: string;
@@ -12,7 +12,9 @@ export interface CityImage {
 }
 
 export interface CityFormData {
+  id?: string;
   nameEn: string;
   nameAr: string;
   image: CityImage;
+  deleteCurrentImage?: boolean;
 }

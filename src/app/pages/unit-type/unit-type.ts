@@ -9,12 +9,17 @@ import {
   Eye,
   Tag,
 } from 'lucide-angular';
-import { UnitTypeInterface } from '../../interfaces/unit-type.interface';
+import { UnitTypeInterface, UnitTypeResponseInterface } from '../../interfaces/unit-type.interface';
 import { UnitTypeService } from '../../services/unit-type.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { DialogModule } from 'primeng/dialog';
 import { HotToastService } from '@ngxpert/hot-toast';
+import { environment } from '../../environment/environment';
+
+interface UnitTypeWithImagePath extends UnitTypeInterface {
+  imagePath?: string;
+}
 
 @Component({
   selector: 'app-unit-type',
@@ -23,10 +28,10 @@ import { HotToastService } from '@ngxpert/hot-toast';
   styleUrl: './unit-type.css',
 })
 export class UnitType {
-  unitTypes = signal<UnitTypeInterface[]>([]);
+  unitTypes = signal<UnitTypeWithImagePath[]>([]);
   deleteDialogVisible = false;
   detailsDialogVisible = false;
-  selectedUnitType: UnitTypeInterface | null = null;
+  selectedUnitType: UnitTypeWithImagePath | null = null;
   page = signal<number>(1);
   totalPages = signal<number>(1);
   itemsPerPage = signal<number>(9);
@@ -36,6 +41,7 @@ export class UnitType {
   showStartEllipsis = signal<boolean>(false);
   showEndEllipsis = signal<boolean>(false);
   loading = signal<boolean>(true);
+  imageUrl = environment.imageUrl;
 
   protected readonly Pencil = Pencil;
   protected readonly Trash2 = Trash2;

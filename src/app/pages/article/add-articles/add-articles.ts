@@ -11,6 +11,7 @@ import { ArticlesCategoryService } from '../../../services/articles-category.ser
 import { ArticlesService } from '../../../services/articles.service';
 import { HotToastService } from '@ngxpert/hot-toast';
 import { ActivatedRoute, Router } from '@angular/router';
+import { processImageInput, getEmptyImageData } from '../../../utils/image.utils';
 @Component({
   selector: 'app-add-articles',
   imports: [ReactiveFormsModule, CommonModule, JsonPipe],
@@ -19,7 +20,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 })
 export class AddArticles {
   @ViewChild('fileInput', { static: false }) fileInput!: ElementRef<HTMLInputElement>;
-
   articleForm: FormGroup;
   imagePreview = signal<string | null>(null);
   categories = signal<ArticleCategoryUpdateFormData[]>([]);
@@ -40,6 +40,7 @@ export class AddArticles {
       if (this.isEdit) {
         this.articlesService.getArticle(this.id!).subscribe(
           (response: any) => {
+            console.log(response);
             this.articleForm.patchValue(response);
             this.cdr.detectChanges();
           },
@@ -73,54 +74,46 @@ export class AddArticles {
     });
   }
 
-  onFileSelected(event: Event): void {
+  async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    this.handleFileSelection(input);
+    await this.handleFileSelection(input);
   }
 
-  private handleFileSelection(input: HTMLInputElement): void {
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      const reader = new FileReader();
+  private async handleFileSelection(input: HTMLInputElement): Promise<void> {
+    try {
+      const result = await processImageInput(input);
+      
+      if (result) {
+        // Update preview
+        this.imagePreview.set(result.preview);
 
-      reader.onload = () => {
-        const base64String = reader.result as string;
-        // Store full data URL for preview - update immediately using signal
-        this.imagePreview.set(base64String);
-
-        // Remove data URL prefix (e.g., "data:image/png;base64,") for form data
-        const base64Data = base64String.split(',')[1] || base64String;
-
-        const fileExtension = file.name.split('.').pop() || '';
-        const fileName = file.name.replace(`.${fileExtension}`, '');
-
+        // Update form with image data
         this.articleForm.patchValue({
           image: {
-            name: fileName,
-            extension: `.${fileExtension}`,
-            data: base64Data,
+            name: result.name,
+            extension: result.extension,
+            data: result.data, // Full data URI format: data:image/<type>,<data>
           },
         });
-      };
-
-      reader.onerror = () => {
-        console.error('Error reading file');
-      };
-
-      reader.readAsDataURL(file);
-    } else {
-      // If no file selected, clear preview
+      } else {
+        // If no file selected, clear preview
+        this.imagePreview.set(null);
+      }
+    } catch (error: any) {
+      console.error('Error processing image:', error);
+      this.hotToastService.error(error.message || 'Failed to process image');
       this.imagePreview.set(null);
     }
   }
 
   removeImage(): void {
     this.imagePreview.set(null);
+    const emptyImage = getEmptyImageData();
     this.articleForm.patchValue({
       image: {
-        name: '',
-        extension: '',
-        data: '',
+        name: emptyImage.name,
+        extension: emptyImage.extension,
+        data: emptyImage.data,
       },
     });
     // Reset file input
@@ -144,28 +137,26 @@ export class AddArticles {
     if (this.articleForm.valid) {
       const formData: ArticleFormData = this.articleForm.value;
       if (this.isEdit) {
-        this.articlesService
-          .updateArticle(this.id!, { id: this.id!, ...formData })
-          .subscribe((response: any) => {
+        this.articlesService.updateArticle(this.id!, { id: this.id!, ...formData }).subscribe(
+          (response: any) => {
             this.hotToastService.success('Article updated successfully');
             this.router.navigate(['/articles']);
-          });
+          },
+          (error: any) => {
+            this.hotToastService.error('Failed to update article');
+          }
+        );
       } else {
-        this.articlesService.addArticle(formData).subscribe((response: any) => {
-          this.hotToastService.success('Article added successfully');
-          this.router.navigate(['/articles']);
-        });
+        this.articlesService.addArticle(formData).subscribe(
+          (response: any) => {
+            this.hotToastService.success('Article added successfully');
+            this.router.navigate(['/articles']);
+          },
+          (error: any) => {
+            this.hotToastService.error('Failed to add article');
+          }
+        );
       }
-      this.articlesService.addArticle(formData).subscribe(
-        (response: any) => {
-          this.hotToastService.success('Article added successfully');
-          this.router.navigate(['/articles']);
-        },
-        (error: any) => {
-          this.hotToastService.error('Failed to add article');
-        }
-      );
-      // TODO: Submit form data to your API
     } else {
       // Mark all fields as touched to show validation errors
       Object.keys(this.articleForm.controls).forEach((key) => {

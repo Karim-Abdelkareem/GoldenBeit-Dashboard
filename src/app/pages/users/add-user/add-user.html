@@ -1,0 +1,296 @@
+<div class="container mx-auto p-6 max-w-7xl">
+  <div class="flex items-center gap-4 mb-6">
+    <button
+      (click)="goBack()"
+      class="p-2 rounded-md hover:bg-gray-100 transition-colors"
+      title="Go back"
+    >
+      <lucide-angular [img]="ArrowLeft" class="w-6 h-6 text-gray-600" />
+    </button>
+    <h1 class="text-3xl font-bold" style="color: #0d5a4b">
+      @if (isEdit) { Edit User } @else { Add New User }
+    </h1>
+  </div>
+
+  <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="space-y-6">
+    <!-- First Name and Last Name Row -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- First Name -->
+      <div>
+        <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">
+          First Name <span class="text-red-500">*</span>
+        </label>
+        <input
+          id="firstName"
+          type="text"
+          formControlName="firstName"
+          class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-transparent"
+          style="--tw-ring-color: #e2b43a"
+          onfocus="this.style.borderColor='#E2B43A'; this.style.boxShadow='0 0 0 2px rgba(226, 180, 58, 0.2)'"
+          onblur="this.style.borderColor=''; this.style.boxShadow=''"
+          [class.border-red-500]="f['firstName'].invalid && f['firstName'].touched"
+          placeholder="Enter first name"
+        />
+        @if (f['firstName'].invalid && f['firstName'].touched) {
+        <p class="mt-1 text-sm text-red-500">First name is required</p>
+        }
+      </div>
+
+      <!-- Last Name -->
+      <div>
+        <label for="lastName" class="block text-sm font-medium text-gray-700 mb-2">
+          Last Name <span class="text-red-500">*</span>
+        </label>
+        <input
+          id="lastName"
+          type="text"
+          formControlName="lastName"
+          class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-transparent"
+          style="--tw-ring-color: #e2b43a"
+          onfocus="this.style.borderColor='#E2B43A'; this.style.boxShadow='0 0 0 2px rgba(226, 180, 58, 0.2)'"
+          onblur="this.style.borderColor=''; this.style.boxShadow=''"
+          [class.border-red-500]="f['lastName'].invalid && f['lastName'].touched"
+          placeholder="Enter last name"
+        />
+        @if (f['lastName'].invalid && f['lastName'].touched) {
+        <p class="mt-1 text-sm text-red-500">Last name is required</p>
+        }
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div>
+      <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+        Email <span class="text-red-500">*</span>
+      </label>
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-transparent"
+        style="--tw-ring-color: #e2b43a"
+        onfocus="this.style.borderColor='#E2B43A'; this.style.boxShadow='0 0 0 2px rgba(226, 180, 58, 0.2)'"
+        onblur="this.style.borderColor=''; this.style.boxShadow=''"
+        [class.border-red-500]="f['email'].invalid && f['email'].touched"
+        placeholder="Enter email address"
+      />
+      @if (f['email'].invalid && f['email'].touched) {
+      <p class="mt-1 text-sm text-red-500">
+        @if (f['email'].errors?.['required']) { Email is required } @else if
+        (f['email'].errors?.['email']) { Please enter a valid email address }
+      </p>
+      }
+    </div>
+
+    <!-- User Name -->
+    <div>
+      <label for="userName" class="block text-sm font-medium text-gray-700 mb-2">
+        User Name <span class="text-red-500">*</span>
+      </label>
+      <input
+        id="userName"
+        type="text"
+        formControlName="userName"
+        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-transparent"
+        style="--tw-ring-color: #e2b43a"
+        onfocus="this.style.borderColor='#E2B43A'; this.style.boxShadow='0 0 0 2px rgba(226, 180, 58, 0.2)'"
+        onblur="this.style.borderColor=''; this.style.boxShadow=''"
+        [class.border-red-500]="f['userName'].invalid && f['userName'].touched"
+        placeholder="Enter user name"
+      />
+      @if (f['userName'].invalid && f['userName'].touched) {
+      <p class="mt-1 text-sm text-red-500">User name is required</p>
+      }
+    </div>
+
+    <!-- Password and Confirm Password Row -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Password -->
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+          Password @if (!isEdit) { <span class="text-red-500">*</span> } @if (isEdit) {
+          <span class="text-gray-400 text-xs">(Leave empty to keep current)</span> }
+        </label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-transparent"
+          style="--tw-ring-color: #e2b43a"
+          onfocus="this.style.borderColor='#E2B43A'; this.style.boxShadow='0 0 0 2px rgba(226, 180, 58, 0.2)'"
+          onblur="this.style.borderColor=''; this.style.boxShadow=''"
+          [class.border-red-500]="f['password'].invalid && f['password'].touched"
+          placeholder="Enter password"
+        />
+        @if (f['password'].invalid && f['password'].touched) {
+        <p class="mt-1 text-sm text-red-500">
+          @if (f['password'].errors?.['required']) { Password is required } @else if
+          (f['password'].errors?.['minlength']) { Password must be at least 6 characters }
+        </p>
+        }
+      </div>
+
+      <!-- Confirm Password -->
+      <div>
+        <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">
+          Confirm Password @if (!isEdit) { <span class="text-red-500">*</span> } @if (isEdit) {
+          <span class="text-gray-400 text-xs">(Leave empty to keep current)</span> }
+        </label>
+        <input
+          id="confirmPassword"
+          type="password"
+          formControlName="confirmPassword"
+          class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-transparent"
+          style="--tw-ring-color: #e2b43a"
+          onfocus="this.style.borderColor='#E2B43A'; this.style.boxShadow='0 0 0 2px rgba(226, 180, 58, 0.2)'"
+          onblur="this.style.borderColor=''; this.style.boxShadow=''"
+          [class.border-red-500]="(f['confirmPassword'].invalid || userForm.errors?.['passwordMismatch']) && f['confirmPassword'].touched"
+          placeholder="Confirm password"
+        />
+        @if (f['confirmPassword'].invalid && f['confirmPassword'].touched) {
+        <p class="mt-1 text-sm text-red-500">Please confirm your password</p>
+        } @if (userForm.errors?.['passwordMismatch'] && f['confirmPassword'].touched) {
+        <p class="mt-1 text-sm text-red-500">Passwords do not match</p>
+        }
+      </div>
+    </div>
+
+    <!-- Country Code and Phone Number Row -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Country Code -->
+      <div class="relative country-dropdown-container">
+        <label for="countryCode" class="block text-sm font-medium text-gray-700 mb-2">
+          Country Code <span class="text-red-500">*</span>
+        </label>
+        <!-- Hidden input for form control -->
+        <input type="hidden" formControlName="countryCode" id="countryCode" />
+        <!-- Custom Dropdown -->
+        <div class="relative">
+          <button
+            type="button"
+            (click)="toggleCountryDropdown()"
+            class="w-full px-4 py-2 border rounded-md focus:outline-none focus:border-transparent bg-white text-left flex items-center justify-between"
+            [class.border-red-500]="f['countryCode'].invalid && f['countryCode'].touched"
+            [class.border-gray-300]="!(f['countryCode'].invalid && f['countryCode'].touched)"
+            style="--tw-ring-color: #e2b43a"
+            onfocus="this.style.borderColor='#E2B43A'; this.style.boxShadow='0 0 0 2px rgba(226, 180, 58, 0.2)'"
+            onblur="this.style.borderColor=''; this.style.boxShadow=''"
+          >
+            <div class="flex items-center gap-2">
+              @if (selectedCountry) {
+              <img
+                [src]="selectedCountry.flagUrl"
+                [alt]="selectedCountry.nameAr"
+                class="w-6 h-4 object-cover rounded"
+                onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2224%22%3E%3Crect fill=%22%23ccc%22 width=%2240%22 height=%2224%22/%3E%3C/svg%3E'"
+              />
+              <span class="text-gray-700">{{ selectedCountry.code }}</span>
+              } @else {
+              <span class="text-gray-400">Select Country</span>
+              }
+            </div>
+            <svg
+              class="w-5 h-5 text-gray-400 transition-transform"
+              [class.rotate-180]="countryDropdownOpen"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+
+          <!-- Dropdown Menu -->
+          @if (countryDropdownOpen) {
+          <div
+            class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
+          >
+            @for (country of countries; track country.code) {
+            <button
+              type="button"
+              (click)="selectCountry(country)"
+              class="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left"
+              [class.bg-gray-50]="selectedCountry?.code === country.code"
+              [class.border-l-4]="selectedCountry?.code === country.code"
+              [style.border-left-color]="
+                selectedCountry?.code === country.code ? '#E2B43A' : 'transparent'
+              "
+            >
+              <img
+                [src]="country.flagUrl"
+                [alt]="country.nameAr"
+                class="w-8 h-6 object-cover rounded"
+                onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2224%22%3E%3Crect fill=%22%23ccc%22 width=%2240%22 height=%2224%22/%3E%3C/svg%3E'"
+              />
+              <div class="flex-1">
+                <div class="text-sm font-medium text-gray-900" style="color: #0d5a4b">
+                  {{ country.nameAr }}
+                </div>
+                <div class="text-sm text-gray-500">{{ country.code }}</div>
+              </div>
+            </button>
+            }
+          </div>
+          }
+        </div>
+        @if (f['countryCode'].invalid && f['countryCode'].touched) {
+        <p class="mt-1 text-sm text-red-500">Country code is required</p>
+        }
+      </div>
+
+      <!-- Phone Number -->
+      <div>
+        <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-2">
+          Phone Number <span class="text-red-500">*</span>
+        </label>
+        <input
+          id="phoneNumber"
+          type="tel"
+          formControlName="phoneNumber"
+          class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-transparent"
+          style="--tw-ring-color: #e2b43a"
+          onfocus="this.style.borderColor='#E2B43A'; this.style.boxShadow='0 0 0 2px rgba(226, 180, 58, 0.2)'"
+          onblur="this.style.borderColor=''; this.style.boxShadow=''"
+          [class.border-red-500]="f['phoneNumber'].invalid && f['phoneNumber'].touched"
+          placeholder="Enter phone number"
+        />
+        @if (f['phoneNumber'].invalid && f['phoneNumber'].touched) {
+        <p class="mt-1 text-sm text-red-500">Phone number is required</p>
+        }
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="flex gap-4 pt-4">
+      <button
+        type="submit"
+        [disabled]="userForm.invalid"
+        class="px-6 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+        style="background-color: #e2b43a; color: #0a3022; --tw-ring-color: #e2b43a"
+        onmouseover="this.style.backgroundColor='#d4a530'"
+        onmouseout="this.style.backgroundColor='#E2B43A'"
+      >
+        @if (isEdit) { Update User } @else { Create User }
+      </button>
+      <button
+        type="button"
+        (click)="userForm.reset()"
+        class="px-6 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+      >
+        Reset
+      </button>
+      <button
+        type="button"
+        (click)="goBack()"
+        class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors"
+      >
+        Cancel
+      </button>
+    </div>
+  </form>
+</div>

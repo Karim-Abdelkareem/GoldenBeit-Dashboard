@@ -1,21 +1,2 @@
-<div class="grid grid-cols-12">
-  <app-sidebar
-    [class]="
-      isOpen()
-        ? 'col-span-2 h-screen sticky top-0 transition-all duration-500'
-        : 'col-span-1 h-screen sticky top-0 transition-all duration-500'
-    "
-    [isOpen]="isOpen()"
-    (isOpenChange)="isOpen.set($event)"
-  ></app-sidebar>
-  <h1
-    [class]="
-      isOpen()
-        ? 'col-span-10 transition-all duration-500'
-        : 'col-span-11 transition-all duration-500'
-    "
-  >
-    <router-outlet></router-outlet>
-    <hot-toast></hot-toast>
-  </h1>
-</div>
+<router-outlet></router-outlet>
+<hot-toast></hot-toast>

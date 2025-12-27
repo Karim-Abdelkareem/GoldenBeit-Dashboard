@@ -15,6 +15,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { DialogModule } from 'primeng/dialog';
 import { HotToastService } from '@ngxpert/hot-toast';
+import { environment } from '../../environment/environment';
 
 @Component({
   selector: 'app-article',
@@ -30,6 +31,7 @@ export class Article {
   protected readonly Pencil = Pencil;
   protected readonly Trash2 = Trash2;
   protected readonly Plus = Plus;
+  url = environment.imageUrl;
   articles = signal<ArticleData[]>([]);
   today = new Date();
   page = signal<number>(1);

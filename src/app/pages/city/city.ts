@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-angular';
+import { environment } from '../../environment/environment';
 
 @Component({
   selector: 'app-city',
@@ -37,6 +38,7 @@ export class City {
   protected readonly Plus = Plus;
   protected readonly ChevronLeft = ChevronLeft;
   protected readonly ChevronRight = ChevronRight;
+  url = environment.imageUrl;
 
   // Computed signal for visible page numbers
   visiblePages = computed(() => {
@@ -143,7 +145,7 @@ export class City {
 
   confirmDelete(): void {
     if (this.selectedCity) {
-      this.cityService.deleteCity(this.selectedCity.id).subscribe(
+      this.cityService.deleteCity(this.selectedCity.id!).subscribe(
         (response: any) => {
           this.hotToastService.success(`City "${this.selectedCity!.nameEn}" deleted successfully`);
           this.deleteDialogVisible = false;

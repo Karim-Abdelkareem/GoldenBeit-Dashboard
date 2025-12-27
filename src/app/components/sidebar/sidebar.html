@@ -1,10 +1,13 @@
 <div
-  class="relative rounded-r-lg h-full border-r border-gray-300 transition-all duration-500 ease-in-out sidebar-container flex flex-col"
+  class="relative rounded-r-lg h-full border-r border-gray-300 transition-all duration-500 ease-in-out sidebar-container flex flex-col bg-white"
   [class.sidebar-open]="isOpen"
   [class.sidebar-closed]="!isOpen"
 >
   <!-- Logo and toggle button - Fixed at top -->
-  <div class="flex items-center p-4 justify-between gap-2 flex-shrink-0">
+  <div
+    class="flex items-center p-4 justify-between gap-2 shrink-0"
+    [class.justify-center]="!isOpen"
+  >
     <div class="logo-container overflow-hidden">
       @if (isOpen) {
       <img src="sidebar/logo.png" alt="Logo" width="150" height="150" class="logo-animate" />
@@ -12,59 +15,67 @@
       <img src="sidebar/small-logo.png" alt="Logo" width="50" height="50" class="logo-animate" />
       }
     </div>
-    <lucide-angular
-      [img]="isOpen ? PanelRightOpen : PanelLeftOpen"
-      class="w-6 h-6 cursor-pointer transition-transform duration-500 hover:scale-110"
-      (click)="isOpenChange.emit(!isOpen)"
-    />
   </div>
   <!-- Horizontal rule -->
-  <hr class="border-gray-300 transition-all duration-500 flex-shrink-0" />
+  <hr class="border-gray-300 transition-all duration-500 shrink-0" />
   <!-- Navigation items - Scrollable middle section -->
   <div class="flex-1 overflow-y-auto overflow-x-hidden sidebar-navigation">
     @for (item of GeneralItems; track item.label) {
-    <!-- General item -->
-    @if (item.items && isOpen) {
-    <!-- Show accordion when sidebar is open and item has sub-items -->
-    <div class="flex items-center cursor-pointer rounded-md px-4 py-2 transition-all duration-500">
-      <p-accordion [value]="0">
-        <p-accordion-panel value="0">
-          <p-accordion-header>
-            <div class="flex items-center gap-2 text-black font-normal">
-              <lucide-angular
-                [img]="item.icon"
-                class="transition-transform duration-500 shrink-0"
-              />
-              <span
-                class="sidebar-text whitespace-nowrap overflow-hidden transition-all duration-500"
-                >{{ item.label }}</span
-              >
-            </div>
-          </p-accordion-header>
-          <p-accordion-content>
-            <div class="flex flex-col text-sm">
-              @for (subItem of item.items; track subItem.label) {
-              <div
-                class="flex items-center gap-2 cursor-pointer rounded-md py-2 hover:font-medium"
-                [routerLink]="subItem.route"
-              >
-                <lucide-angular [img]="subItem.icon" class="w-4 h-4" />
-                <span class="whitespace-nowrap overflow-hidden">{{ subItem.label }}</span>
-              </div>
-              }
-            </div>
-          </p-accordion-content>
-        </p-accordion-panel>
-      </p-accordion>
+    <!-- Item with sub-items -->
+    @if (item.items && item.items.length > 0) {
+    <div class="mb-1">
+      <!-- Parent item -->
+      <div
+        class="flex items-center gap-2 cursor-pointer rounded-md px-4 py-3 transition-all duration-300 hover:bg-gray-50"
+        [class.justify-center]="!isOpen"
+        [class.active-parent]="isChildRouteActive(item)"
+        (click)="toggleItemExpansion(item)"
+      >
+        <lucide-angular
+          [img]="item.icon"
+          class="transition-transform duration-300 shrink-0"
+          [class.text-yellow-500]="isChildRouteActive(item)"
+        />
+        @if (isOpen) {
+        <span
+          class="sidebar-text whitespace-nowrap overflow-hidden transition-all duration-500 flex-1"
+          [class.active-parent-content]="isChildRouteActive(item)"
+          >{{ item.label }}</span
+        >
+        <lucide-angular
+          [img]="ChevronDown"
+          class="w-4 h-4 transition-transform duration-300 shrink-0"
+          [class.rotate-180]="isItemExpanded(item)"
+        />
+        }
+      </div>
+      <!-- Sub-items -->
+      @if (isOpen && isItemExpanded(item)) {
+      <div class="ml-4 mt-1 space-y-1">
+        @for (subItem of item.items; track subItem.label) {
+        <div
+          class="flex items-center gap-2 cursor-pointer rounded-md py-2 px-3 transition-colors hover:bg-gray-50"
+          [routerLink]="subItem.route"
+          routerLinkActive="active-route"
+          [routerLinkActiveOptions]="{ exact: false }"
+        >
+          <lucide-angular [img]="subItem.icon" class="w-4 h-4" />
+          <span class="whitespace-nowrap overflow-hidden text-sm">{{ subItem.label }}</span>
+        </div>
+        }
+      </div>
+      }
     </div>
     } @else {
-    <!-- Show simple navigation when sidebar is closed or item has no sub-items -->
+    <!-- Simple item without sub-items -->
     <div
-      class="flex items-center gap-2 cursor-pointer rounded-md px-4 py-4 transition-all duration-500"
+      class="flex items-center gap-2 cursor-pointer rounded-md px-4 py-3 transition-all duration-300 hover:bg-gray-50 mb-1"
       [class.justify-center]="!isOpen"
       [routerLink]="item.route"
+      routerLinkActive="active-route"
+      [routerLinkActiveOptions]="{ exact: false }"
     >
-      <lucide-angular [img]="item.icon" class="transition-transform duration-500 shrink-0" />
+      <lucide-angular [img]="item.icon" class="transition-transform duration-300 shrink-0" />
       <span
         class="sidebar-text whitespace-nowrap overflow-hidden transition-all duration-500"
         [class.w-0]="!isOpen"
@@ -77,49 +88,61 @@
     } }
   </div>
 
-    <!-- User Account - Fixed at bottom -->
-    @if (isLoggedIn) {
-    <div class="bg-white flex-shrink-0 w-full border-t border-gray-300">
-      <div
-        class="flex items-center cursor-pointer transition-all duration-500 gap-2 p-4"
-        [class.justify-center]="!isOpen"
-        [routerLink]="'/profile'"
+  <!-- User Account - Fixed at bottom -->
+  @if (isLoggedIn) {
+  <div class="bg-gray-50 shrink-0 w-full border-t border-gray-300">
+    <div
+      class="flex items-center cursor-pointer transition-all duration-500 gap-2 p-4 hover:bg-gray-100"
+      [class.justify-center]="!isOpen"
+      [routerLink]="'/profile'"
+      routerLinkActive="active-route"
+      [routerLinkActiveOptions]="{ exact: false }"
+    >
+      <img src="sidebar/user.jpg" alt="User" width="30" height="30" class="rounded-full" />
+      <span
+        class="sidebar-text whitespace-nowrap overflow-hidden transition-all duration-500"
+        [class.hidden]="!isOpen"
+        >{{ user.fullName || user.firstName }} {{ user.lastName }}</span
       >
-        <img src="sidebar/user.jpg" alt="User" width="30" height="30" class="rounded-full" />
-        <span
-          class="sidebar-text whitespace-nowrap overflow-hidden transition-all duration-500"
-          [class.hidden]="!isOpen"
-          >{{ user.fullName || user.firstName }} {{ user.lastName }}</span
-        >
-      </div>
-      <!-- Logout button -->
-      <div
-        class="flex items-center gap-2 p-4 cursor-pointer text-red-500 hover:text-red-700 font-bold transition-all duration-500"
-        [class.justify-center]="!isOpen"
-        (click)="logout()"
-      >
-        <lucide-angular [img]="LogOut" class="transition-transform duration-500 shrink-0" />
-        <span
-          class="sidebar-text whitespace-nowrap overflow-hidden transition-all duration-500"
-          [class.w-0]="!isOpen"
-          [class.opacity-0]="!isOpen"
-          [class.w-auto]="isOpen"
-          [class.opacity-100]="isOpen"
-          >Logout</span
-        >
-      </div>
     </div>
-    } @else {
-    <div class="bg-white flex-shrink-0 w-full border-t border-gray-300">
-      <div
-        class="flex items-center cursor-pointer transition-all duration-500 gap-2 p-4"
-        [class.justify-center]="!isOpen"
-        [routerLink]="'/login'"
+    <!-- Logout button -->
+    <div
+      class="flex items-center gap-2 p-4 cursor-pointer text-red-500 hover:text-red-700 hover:bg-red-50 font-semibold transition-all duration-500"
+      [class.justify-center]="!isOpen"
+      (click)="logout()"
+    >
+      <lucide-angular [img]="LogOut" class="transition-transform duration-500 shrink-0" />
+      <span
+        class="sidebar-text whitespace-nowrap overflow-hidden transition-all duration-500"
+        [class.w-0]="!isOpen"
+        [class.opacity-0]="!isOpen"
+        [class.w-auto]="isOpen"
+        [class.opacity-100]="isOpen"
+        >Logout</span
       >
-        <span class="sidebar-text whitespace-nowrap overflow-hidden transition-all duration-500"
-          >Login</span
-        >
-      </div>
     </div>
-    }
+  </div>
+  } @else {
+  <div class="bg-gray-50 shrink-0 w-full border-t border-gray-300">
+    <div
+      class="flex items-center cursor-pointer transition-all duration-500 gap-2 p-4 hover:bg-gray-100"
+      [class.justify-center]="!isOpen"
+      [routerLink]="'/login'"
+    >
+      <span class="sidebar-text whitespace-nowrap overflow-hidden transition-all duration-500"
+        >Login</span
+      >
+    </div>
+  </div>
+  }
+  <div
+    class="flex items-center p-4 border-t border-gray-300 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
+    [class.justify-center]="!isOpen"
+    (click)="isOpenChange.emit(!isOpen)"
+  >
+    <lucide-angular
+      [img]="isOpen ? PanelRightOpen : PanelLeftOpen"
+      class="w-6 h-6 transition-transform duration-500 hover:scale-110"
+    />
+  </div>
 </div>

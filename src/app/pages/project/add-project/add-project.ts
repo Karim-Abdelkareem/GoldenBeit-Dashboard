@@ -7,6 +7,8 @@ import { ProjectFormData } from '../../../interfaces/project';
 import { ProjectService } from '../../../services/project.service';
 import { HotToastService } from '@ngxpert/hot-toast';
 import { splitIncludes, joinIncludes } from '../../../utils/string.utils';
+import { processImageInput, getEmptyImageData } from '../../../utils/image.utils';
+import { environment } from '../../../environment/environment';
 
 @Component({
   selector: 'app-add-project',
@@ -21,6 +23,8 @@ export class AddProject {
   imagePreview = signal<string | null>(null);
   isEdit = false;
   id: string | null = null;
+  imageUrl = environment.imageUrl;
+  originalImagePath: string | null = null; // Track original image path for edit mode
   protected readonly ArrowLeft = ArrowLeft;
   protected readonly Plus = Plus;
   protected readonly X = X;
@@ -45,7 +49,7 @@ export class AddProject {
       image: this.fb.group({
         name: [''],
         extension: [''],
-        data: ['', [Validators.required]],
+        data: [''], // Will be required only for add mode, not for edit mode
       }),
     });
   }
@@ -54,16 +58,31 @@ export class AddProject {
     this.route.params.subscribe((params) => {
       this.id = params['id'];
       this.isEdit = !!this.id;
+      
+      // For edit mode, image is optional (can keep current image)
+      // For add mode, image is required
+      if (!this.isEdit) {
+        this.projectForm.get('image.data')?.setValidators([Validators.required]);
+        this.projectForm.get('image.data')?.updateValueAndValidity();
+      }
+      
       if (this.isEdit) {
+        // Remove required validator for image.data in edit mode (image is optional)
+        this.projectForm.get('image.data')?.clearValidators();
+        this.projectForm.get('image.data')?.updateValueAndValidity();
+        
         this.projectService.getProject(this.id!).subscribe(
           (response: any) => {
+            // Handle response.data if it exists (wrapped response)
+            const data = response.data || response;
+            
             // Convert includes string to array using utility function
-            const includesAr = Array.isArray(response.includesAr)
-              ? response.includesAr
-              : splitIncludes(response.includesAr);
-            const includesEn = Array.isArray(response.includesEn)
-              ? response.includesEn
-              : splitIncludes(response.includesEn);
+            const includesAr = Array.isArray(data.includesAr)
+              ? data.includesAr
+              : splitIncludes(data.includesAr);
+            const includesEn = Array.isArray(data.includesEn)
+              ? data.includesEn
+              : splitIncludes(data.includesEn);
 
             // Clear existing form arrays
             while (this.includesAr.length !== 0) {
@@ -90,16 +109,28 @@ export class AddProject {
             }
 
             this.projectForm.patchValue({
-              nameAr: response.nameAr || '',
-              nameEn: response.nameEn || '',
-              subNameAr: response.subNameAr || '',
-              subNameEn: response.subNameEn || '',
-              descriptionAr: response.descriptionAr || '',
-              descriptionEn: response.descriptionEn || '',
+              nameAr: data.nameAr || '',
+              nameEn: data.nameEn || '',
+              subNameAr: data.subNameAr || '',
+              subNameEn: data.subNameEn || '',
+              descriptionAr: data.descriptionAr || '',
+              descriptionEn: data.descriptionEn || '',
             });
 
-            if (response.imagePath) {
-              this.imagePreview.set(response.imagePath);
+            // Handle image using image utils - convert imagePath to preview URL
+            if (data.imagePath) {
+              // Store original image path
+              this.originalImagePath = data.imagePath;
+              
+              // Use image URL from environment to build full preview URL
+              const fullImageUrl = data.imagePath.startsWith('http')
+                ? data.imagePath
+                : `${this.imageUrl}${data.imagePath}`;
+              this.imagePreview.set(fullImageUrl);
+              
+              // Note: We don't set the image form control here because imagePath
+              // is just a URL string, not the image data object needed for upload.
+              // If user wants to update the image, they need to select a new file.
             }
 
             this.cdr.detectChanges();
@@ -145,66 +176,105 @@ export class AddProject {
   }
 
   triggerFileInput(): void {
-    this.fileInput.nativeElement.click();
+    if (this.fileInput?.nativeElement) {
+      this.fileInput.nativeElement.value = '';
+      setTimeout(() => {
+        this.fileInput.nativeElement.click();
+      }, 0);
+    }
   }
 
-  onFileSelected(event: Event): void {
+  async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    this.handleFileSelection(input);
+    await this.handleFileSelection(input);
   }
 
-  private handleFileSelection(input: HTMLInputElement): void {
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      const reader = new FileReader();
+  private async handleFileSelection(input: HTMLInputElement): Promise<void> {
+    try {
+      const result = await processImageInput(input);
+      
+      if (result) {
+        // Clear original image path when new image is selected
+        this.originalImagePath = null;
+        
+        // Update preview
+        this.imagePreview.set(result.preview);
 
-      reader.onload = () => {
-        const base64String = reader.result as string;
-        this.imagePreview.set(base64String);
-
-        const base64Data = base64String.split(',')[1] || base64String;
-        const fileExtension = file.name.split('.').pop() || '';
-        const fileName = file.name.replace(`.${fileExtension}`, '');
-
+        // Update form with image data (full data URI format)
         this.projectForm.patchValue({
           image: {
-            name: fileName,
-            extension: `.${fileExtension}`,
-            data: base64Data,
+            name: result.name,
+            extension: result.extension,
+            data: result.data, // Full data URI format: data:image/<type>,<data>
           },
         });
 
         this.cdr.detectChanges();
-      };
-
-      reader.onerror = () => {
-        this.hotToastService.error('Failed to read file');
-      };
-
-      reader.readAsDataURL(file);
+      } else {
+        // If no file selected, clear preview
+        this.imagePreview.set(null);
+      }
+    } catch (error: any) {
+      console.error('Error processing image:', error);
+      this.hotToastService.error(error.message || 'Failed to process image');
+      this.imagePreview.set(null);
     }
   }
 
   removeImage(): void {
     this.imagePreview.set(null);
+    this.originalImagePath = null; // Clear original image path when removing
+    const emptyImage = getEmptyImageData();
     this.projectForm.patchValue({
       image: {
-        name: '',
-        extension: '',
-        data: '',
+        name: emptyImage.name,
+        extension: emptyImage.extension,
+        data: emptyImage.data,
       },
     });
-    if (this.fileInput) {
+    if (this.fileInput?.nativeElement) {
       this.fileInput.nativeElement.value = '';
     }
   }
 
   onSubmit(): void {
-    if (this.projectForm.valid) {
-      const formData = this.projectForm.value as ProjectFormData;
+    // For edit mode, temporarily remove image validation if no new image is selected
+    const imageData = this.projectForm.value.image;
+    const hasNewImage = imageData && imageData.data && imageData.data.trim() !== '';
+    
+    if (this.isEdit && !hasNewImage) {
+      // Temporarily remove required validator for image.data in edit mode
+      this.projectForm.get('image.data')?.clearValidators();
+      this.projectForm.get('image.data')?.updateValueAndValidity();
+    } else if (!this.isEdit) {
+      // For add mode, ensure image is required
+      this.projectForm.get('image.data')?.setValidators([Validators.required]);
+      this.projectForm.get('image.data')?.updateValueAndValidity();
+    }
 
+    if (this.projectForm.valid) {
       if (this.isEdit && this.id) {
-        this.projectService.updateProject(this.id, { id: this.id, ...formData }).subscribe(
+        // For update: check if user selected a new image
+        const updateData: any = {
+          id: this.id,
+          nameAr: this.projectForm.value.nameAr,
+          nameEn: this.projectForm.value.nameEn,
+          subNameAr: this.projectForm.value.subNameAr,
+          subNameEn: this.projectForm.value.subNameEn,
+          descriptionAr: this.projectForm.value.descriptionAr,
+          descriptionEn: this.projectForm.value.descriptionEn,
+          includesAr: this.includesAr.value.filter((item: string) => item.trim() !== ''),
+          includesEn: this.includesEn.value.filter((item: string) => item.trim() !== ''),
+        };
+
+        // If user selected a new image, add deleteCurrentImage: true and image object
+        if (hasNewImage) {
+          updateData.deleteCurrentImage = true;
+          updateData.image = imageData;
+        }
+        // If no new image, don't send image or deleteCurrentImage (keep current image)
+
+        this.projectService.updateProject(this.id, updateData).subscribe(
           (response: any) => {
             this.hotToastService.success('Project updated successfully');
             this.router.navigate(['/projects']);
@@ -214,6 +284,8 @@ export class AddProject {
           }
         );
       } else {
+        // For add: always send image (required)
+        const formData = this.projectForm.value as ProjectFormData;
         this.projectService.addProject(formData).subscribe(
           (response: any) => {
             this.hotToastService.success('Project added successfully');

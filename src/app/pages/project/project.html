@@ -18,7 +18,7 @@
       <div class="col-span-1 flex flex-col gap-4">
         <div class="relative rounded-md overflow-hidden">
           <img
-            [src]="project.imagePath || 'blog/3.jpg'"
+            [src]="url + project.imagePath || 'blog/3.jpg'"
             [alt]="project.nameEn"
             class="w-full h-64 object-cover"
           />
@@ -171,7 +171,7 @@
       @if (selectedProject.imagePath) {
       <div class="w-full">
         <img
-          [src]="selectedProject.imagePath"
+          [src]="url + selectedProject.imagePath"
           [alt]="selectedProject.nameEn"
           class="w-full h-72 object-cover rounded-lg border border-gray-200 shadow-sm"
         />

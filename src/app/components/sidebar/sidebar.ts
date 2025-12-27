@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import {
   LucideAngularModule,
   LayoutDashboard,
@@ -20,8 +20,10 @@ import {
   Layers2,
   FileText,
   House,
+  Users,
+  ChevronDown,
 } from 'lucide-angular';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AccordionModule } from 'primeng/accordion';
 import { CommonModule } from '@angular/common';
 import { HotToastService } from '@ngxpert/hot-toast';
@@ -29,19 +31,34 @@ import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-sidebar',
-  imports: [LucideAngularModule, RouterLink, AccordionModule, CommonModule],
+  imports: [LucideAngularModule, RouterLink, RouterLinkActive, AccordionModule, CommonModule],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })
-export class Sidebar {
+export class Sidebar implements OnInit {
   protected readonly PanelRightOpen = PanelRightOpen;
   protected readonly PanelLeftOpen = PanelLeftOpen;
   protected readonly LogOut = LogOut;
+  protected readonly ChevronDown = ChevronDown;
+  
+  // Track expanded items
+  expandedItems = new Set<string>();
+
   constructor(
     private hotToastService: HotToastService,
     private authService: AuthService,
     private router: Router
   ) {}
+
+  ngOnInit(): void {
+    // Auto-expand items with active child routes on init
+    this.GeneralItems.forEach((item) => {
+      if (item.items && this.isChildRouteActive(item)) {
+        this.expandedItems.add(item.label);
+      }
+    });
+  }
+
   get isLoggedIn() {
     return this.authService.isLoggedIn();
   }
@@ -50,12 +67,44 @@ export class Sidebar {
   }
   @Input() isOpen!: boolean;
   @Output() isOpenChange = new EventEmitter<boolean>();
+
+  // Check if any child route is active
+  isChildRouteActive(item: any): boolean {
+    if (!item.items || item.items.length === 0) {
+      return false;
+    }
+    const currentUrl = this.router.url;
+    return item.items.some((subItem: any) => {
+      if (subItem.route === currentUrl) {
+        return true;
+      }
+      // Check if current URL starts with the subItem route
+      return currentUrl.startsWith(subItem.route + '/') || currentUrl === subItem.route;
+    });
+  }
+
+  // Toggle item expansion
+  toggleItemExpansion(item: any): void {
+    if (!this.isOpen || !item.items || item.items.length === 0) {
+      return;
+    }
+    if (this.expandedItems.has(item.label)) {
+      this.expandedItems.delete(item.label);
+    } else {
+      this.expandedItems.add(item.label);
+    }
+  }
+
+  // Check if item is expanded
+  isItemExpanded(item: any): boolean {
+    return this.expandedItems.has(item.label);
+  }
+  // {
+  //   label: 'Dashboard',
+  //   icon: LayoutDashboard,
+  //   route: '/dashboard',
+  // },
   protected readonly GeneralItems = [
-    {
-      label: 'Dashboard',
-      icon: LayoutDashboard,
-      route: '/dashboard',
-    },
     {
       label: 'Articles',
       icon: Book,
@@ -238,6 +287,23 @@ export class Sidebar {
           label: 'Add Unit Type',
           icon: Plus,
           route: '/unit-type/add',
+        },
+      ],
+    },
+    {
+      label: 'Users',
+      icon: Users,
+      route: '/users',
+      items: [
+        {
+          label: 'View Users',
+          icon: Users,
+          route: '/users',
+        },
+        {
+          label: 'Add Users',
+          icon: Plus,
+          route: '/users/add',
         },
       ],
     },

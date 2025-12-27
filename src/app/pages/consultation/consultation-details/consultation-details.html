@@ -1,0 +1,146 @@
+<div class="container mx-auto p-6 max-w-7xl">
+  <!-- Back Button -->
+  <button
+    (click)="goBack()"
+    class="flex items-center gap-2 mb-6 text-gray-600 hover:text-red-800 transition-colors cursor-pointer"
+  >
+    <lucide-angular [img]="ArrowLeft" class="w-5 h-5" />
+    <span>Back to Consultations</span>
+  </button>
+
+  @if (loading()) {
+  <div class="flex justify-center items-center py-20">
+    <div class="text-gray-500">Loading consultation...</div>
+  </div>
+  } @else if (consultation()) {
+  <div class="space-y-6">
+    <!-- Consultation Image - At the top -->
+    <div class="rounded-lg overflow-hidden shadow-lg mb-8">
+      <img
+        [src]="imageUrl()"
+        [alt]="consultation()?.nameEn"
+        class="w-full h-auto object-cover max-h-96"
+      />
+    </div>
+
+    <!-- Consultation Metadata -->
+    <div class="border-t border-b border-gray-200 py-6 my-8">
+      <div class="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+        <div>
+          <span class="font-semibold">Created On:</span>
+          {{ consultation()?.createdOn | date : 'dd/MM/yyyy' }}
+        </div>
+        <div>
+          <span class="font-semibold">Consultation ID:</span>
+          <span class="font-mono">{{ consultation()?.id }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Consultation Content - Two Columns -->
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- English Column -->
+      <div class="space-y-6">
+        <!-- English Header -->
+        <div class="border-b border-gray-200 pb-4">
+          <h1 class="text-3xl font-bold mb-2" style="color: #0d5a4b">
+            {{ consultation()?.nameEn }}
+          </h1>
+          @if (consultation()?.createdOn) {
+          <p class="text-sm text-gray-500">
+            Created on: {{ consultation()?.createdOn | date : 'dd/MM/yyyy' }}
+          </p>
+          }
+        </div>
+
+        <!-- English Brief -->
+        <div>
+          <h3 class="text-xl font-semibold mb-2" style="color: #0d5a4b">Brief</h3>
+          <p class="text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
+            {{ consultation()?.briefEn }}
+          </p>
+        </div>
+
+        <!-- English Description -->
+        <div>
+          <h3 class="text-xl font-semibold mb-2" style="color: #0d5a4b">Description</h3>
+          <p class="text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
+            {{ consultation()?.descriptionEn }}
+          </p>
+        </div>
+
+        <!-- English Details -->
+        @if (detailsEnArray().length > 0) {
+        <div>
+          <h3 class="text-xl font-semibold mb-2" style="color: #0d5a4b">Details</h3>
+          <ul class="list-disc list-inside space-y-2 text-gray-700">
+            @for (detail of detailsEnArray(); track $index) {
+            <li>{{ detail }}</li>
+            }
+          </ul>
+        </div>
+        }
+      </div>
+
+      <!-- Arabic Column -->
+      <div class="space-y-6 border-l border-gray-200 pl-8" dir="rtl">
+        <!-- Arabic Header -->
+        <div class="border-b border-gray-200 pb-4">
+          <h1 class="text-3xl font-bold mb-2" style="color: #0d5a4b">
+            {{ consultation()?.nameAr }}
+          </h1>
+          @if (consultation()?.createdOn) {
+          <p class="text-sm text-gray-500">
+            تاريخ الإنشاء: {{ consultation()?.createdOn | date : 'dd/MM/yyyy' }}
+          </p>
+          }
+        </div>
+
+        <!-- Arabic Brief -->
+        <div>
+          <h3 class="text-xl font-semibold mb-2" style="color: #0d5a4b">نبذة</h3>
+          <p class="text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
+            {{ consultation()?.briefAr }}
+          </p>
+        </div>
+
+        <!-- Arabic Description -->
+        <div>
+          <h3 class="text-xl font-semibold mb-2" style="color: #0d5a4b">الوصف</h3>
+          <p class="text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
+            {{ consultation()?.descriptionAr }}
+          </p>
+        </div>
+
+        <!-- Arabic Details -->
+        @if (detailsArArray().length > 0) {
+        <div>
+          <h3 class="text-xl font-semibold mb-2" style="color: #0d5a4b">التفاصيل</h3>
+          <ul class="list-disc list-inside space-y-2 text-gray-700" dir="rtl">
+            @for (detail of detailsArArray(); track $index) {
+            <li>{{ detail }}</li>
+            }
+          </ul>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+  } @else {
+  <div class="flex justify-center items-center py-20">
+    <div class="text-center">
+      <p class="text-gray-500 text-lg mb-4">Consultation not found</p>
+      <button
+        (click)="goBack()"
+        class="px-4 py-2 rounded-md transition-colors"
+        style="background-color: #e2b43a; color: #0a3022"
+        onmouseover="this.style.backgroundColor='#d4a530'"
+        onmouseout="this.style.backgroundColor='#e2b43a'"
+      >
+        Back to Consultations
+      </button>
+    </div>
+  </div>
+  }
+</div>
+

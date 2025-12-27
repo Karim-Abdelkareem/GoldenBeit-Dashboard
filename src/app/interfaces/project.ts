@@ -29,4 +29,5 @@ export interface ProjectFormData {
   includesAr: string[];
   includesEn: string[];
   image: ProjectImage;
+  deleteCurrentImage?: boolean;
 }

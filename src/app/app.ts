@@ -1,26 +1,24 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { Sidebar } from './components/sidebar/sidebar';
 import { AuthService } from './services/auth.service';
 import { jwtDecode } from 'jwt-decode';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Sidebar],
+  imports: [RouterOutlet],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
 export class App {
-  protected readonly title = signal('dashboard');
-  protected readonly isOpen = signal<boolean>(true);
-
   constructor(private authService: AuthService) {
+    // User is now loaded automatically from localStorage in AuthService constructor
+    // If no user in storage but token exists, try to decode token as fallback
     const token = localStorage.getItem('token');
-    if (token) {
+    if (token && !authService.getUser()) {
       try {
         const user = jwtDecode(token);
-        this.authService.user.set(user);
+        authService.updateUser(user);
       } catch (error) {
         console.error('Error decoding token:', error);
         localStorage.removeItem('token');

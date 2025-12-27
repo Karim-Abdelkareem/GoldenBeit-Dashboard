@@ -16,6 +16,7 @@ import { Router } from '@angular/router';
 import { DialogModule } from 'primeng/dialog';
 import { HotToastService } from '@ngxpert/hot-toast';
 import { splitIncludes } from '../../utils/string.utils';
+import { environment } from '../../environment/environment';
 
 @Component({
   selector: 'app-project',
@@ -45,6 +46,7 @@ export class Project {
   protected readonly ChevronRight = ChevronRight;
   protected readonly Eye = Eye;
   protected readonly FolderKanban = FolderKanban;
+  url = environment.imageUrl;
 
   // Computed signal for visible page numbers
   visiblePages = computed(() => {

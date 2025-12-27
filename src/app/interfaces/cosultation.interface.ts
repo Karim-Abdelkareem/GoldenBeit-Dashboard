@@ -1,4 +1,4 @@
-export interface CosultationInterface {
+export interface ConsultationData {
   id: string;
   nameAr: string;
   nameEn: string;
@@ -6,10 +6,20 @@ export interface CosultationInterface {
   briefEn: string;
   descriptionAr: string;
   descriptionEn: string;
-  detailsAr: string[];
-  detailsEn: string[];
+  detailsAr: string;
+  detailsEn: string;
   imagePath: string;
   createdOn: string;
+}
+
+export interface ConsultationResponseData {
+  data: ConsultationData[];
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  pageSize: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
 }
 
 export interface ConsultationImage {
@@ -28,4 +38,5 @@ export interface ConsultationFormData {
   detailsAr: string[];
   detailsEn: string[];
   image: ConsultationImage;
+  deleteCurrentImage?: boolean;
 }

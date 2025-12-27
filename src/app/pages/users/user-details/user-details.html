@@ -1,0 +1,126 @@
+<div class="container mx-auto p-6 max-w-7xl">
+  <!-- Header -->
+  <div class="flex items-center gap-4 mb-6">
+    <button
+      (click)="goBack()"
+      class="p-2 rounded-md transition-colors"
+      style="background-color: #0d5a4b; color: white"
+      onmouseover="this.style.backgroundColor='#0f6b5a'"
+      onmouseout="this.style.backgroundColor='#0D5A4B'"
+      title="Back"
+    >
+      <lucide-angular [img]="ArrowLeft" class="w-5 h-5" />
+    </button>
+    <h1 class="text-3xl font-bold" style="color: #0d5a4b">User Details</h1>
+  </div>
+
+  @if (loading) {
+  <div class="flex justify-center items-center py-12">
+    <div class="text-gray-500">Loading user details...</div>
+  </div>
+  } @else if (user) {
+  <!-- User Information Card -->
+  <div class="bg-white rounded-lg p-6 mb-6">
+    <h2 class="text-2xl font-semibold mb-4" style="color: #0d5a4b">User Information</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label class="text-sm font-medium text-gray-500">Full Name</label>
+        <p class="text-lg text-gray-900">{{ getFullName(user) }}</p>
+      </div>
+      <div>
+        <label class="text-sm font-medium text-gray-500">User Name</label>
+        <p class="text-lg text-gray-900">{{ user.userName }}</p>
+      </div>
+      <div>
+        <label class="text-sm font-medium text-gray-500">Email</label>
+        <p class="text-lg text-gray-900">{{ user.email }}</p>
+      </div>
+      <div>
+        <label class="text-sm font-medium text-gray-500">Phone Number</label>
+        <p class="text-lg text-gray-900">{{ getDisplayPhone(user) }}</p>
+      </div>
+      <div>
+        <label class="text-sm font-medium text-gray-500">Status</label>
+        <span
+          class="inline-block px-3 py-1 rounded-full text-sm font-semibold"
+          [style.background-color]="user.isActive ? '#d1fae5' : '#fee2e2'"
+          [style.color]="user.isActive ? '#065f46' : '#991b1b'"
+        >
+          {{ user.isActive ? 'Active' : 'Inactive' }}
+        </span>
+      </div>
+      <div>
+        <label class="text-sm font-medium text-gray-500">Email Confirmed</label>
+        <span
+          class="inline-block px-3 py-1 rounded-full text-sm font-semibold"
+          [style.background-color]="user.emailConfirmed ? '#d1fae5' : '#fee2e2'"
+          [style.color]="user.emailConfirmed ? '#065f46' : '#991b1b'"
+        >
+          {{ user.emailConfirmed ? 'Confirmed' : 'Not Confirmed' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Roles Assignment Card -->
+  <div class="bg-white rounded-lg p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-semibold" style="color: #0d5a4b">Assign Roles</h2>
+      <button
+        (click)="assignRoles()"
+        [disabled]="saving"
+        class="px-4 py-2 text-white rounded-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        style="background-color: #e2b43a; color: #0a3022"
+        onmouseover="this.style.backgroundColor='#d4a530'"
+        onmouseout="this.style.backgroundColor='#E2B43A'"
+      >
+        @if (saving) {
+        <span>Saving...</span>
+        } @else {
+        <span>Save Roles</span>
+        }
+      </button>
+    </div>
+
+    @if (availableRoles.length === 0) {
+    <div class="text-center py-8 text-gray-500">No roles available</div>
+    } @else {
+    <div class="grid grid-cols-2 gap-3">
+      @for (role of availableRoles; track role.roleId) {
+      <div
+        class="border rounded-lg p-4 cursor-pointer transition-all"
+        [class.border-gray-300]="!isRoleSelected(role)"
+        [class.border-yellow-400]="isRoleSelected(role)"
+        [class.bg-yellow-50]="isRoleSelected(role)"
+        (click)="toggleRole(role)"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex-1">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all"
+                [class.border-yellow-400]="isRoleSelected(role)"
+                [class.bg-yellow-400]="isRoleSelected(role)"
+                [class.border-gray-300]="!isRoleSelected(role)"
+              >
+                @if (isRoleSelected(role)) {
+                <lucide-angular [img]="Check" class="w-4 h-4 text-white" />
+                }
+              </div>
+              <div>
+                <h3 class="font-semibold text-lg" style="color: #0d5a4b">
+                  {{ role.roleName }}
+                </h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+    }
+  </div>
+  } @else {
+  <div class="text-center py-12 text-gray-500">User not found</div>
+  }
+</div>
