@@ -11,8 +11,9 @@ export class ProjectService {
 
   getProjects(page: number = 1, pageSize: number = 9): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/v1/project/search`, {
-      page,
+      pageNumber: page,
       pageSize,
+      orderBy: ['createdOn desc'],
     });
   }
   getProject(id: string): Observable<Project> {
@@ -22,7 +23,6 @@ export class ProjectService {
     return this.http.post<Project>(`${environment.apiUrl}/v1/project`, project);
   }
   updateProject(id: string, project: ProjectFormData): Observable<Project> {
-    console.log(project);
     return this.http.put<Project>(`${environment.apiUrl}/v1/project/${id}`, project);
   }
   deleteProject(id: string): Observable<void> {

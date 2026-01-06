@@ -187,6 +187,12 @@ export const routes: Routes = [
         title: 'Edit Projects',
       },
       {
+        path: 'projects/details/:id',
+        loadComponent: () =>
+          import('./pages/project/project-details/project-details').then((m) => m.ProjectDetails),
+        title: 'Project Details',
+      },
+      {
         path: 'stage',
         loadComponent: () => import('./pages/stages/stages').then((m) => m.Stages),
         title: 'View Stages',

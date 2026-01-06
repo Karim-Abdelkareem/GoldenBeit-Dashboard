@@ -1,9 +1,7 @@
 import { Component, ViewChild, ElementRef, signal, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { CommonModule, JsonPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
-  ArticleCategory,
-  ArticleCategoryFormData,
   ArticleFormData,
   ArticleCategoryUpdateFormData,
 } from '../../../interfaces/article.interface';
@@ -12,9 +10,10 @@ import { ArticlesService } from '../../../services/articles.service';
 import { HotToastService } from '@ngxpert/hot-toast';
 import { ActivatedRoute, Router } from '@angular/router';
 import { processImageInput, getEmptyImageData } from '../../../utils/image.utils';
+import { environment } from '../../../environment/environment';
 @Component({
   selector: 'app-add-articles',
-  imports: [ReactiveFormsModule, CommonModule, JsonPipe],
+  imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './add-articles.html',
   styleUrl: './add-articles.css',
 })
@@ -25,6 +24,8 @@ export class AddArticles {
   categories = signal<ArticleCategoryUpdateFormData[]>([]);
   isEdit = false;
   id: string | null = null;
+  currentImagePath: string | null = null;
+  hasNewImage = false;
   constructor(
     private fb: FormBuilder,
     private articlesCategoryService: ArticlesCategoryService,
@@ -40,8 +41,14 @@ export class AddArticles {
       if (this.isEdit) {
         this.articlesService.getArticle(this.id!).subscribe(
           (response: any) => {
-            console.log(response);
             this.articleForm.patchValue(response);
+
+            // Store the current image path and display it
+            if (response.imagePath) {
+              this.currentImagePath = response.imagePath;
+              this.imagePreview.set(`${environment.imageUrl}${response.imagePath}`);
+            }
+
             this.cdr.detectChanges();
           },
           (error: any) => {
@@ -82,10 +89,11 @@ export class AddArticles {
   private async handleFileSelection(input: HTMLInputElement): Promise<void> {
     try {
       const result = await processImageInput(input);
-      
+
       if (result) {
         // Update preview
         this.imagePreview.set(result.preview);
+        this.hasNewImage = true;
 
         // Update form with image data
         this.articleForm.patchValue({
@@ -96,18 +104,33 @@ export class AddArticles {
           },
         });
       } else {
-        // If no file selected, clear preview
-        this.imagePreview.set(null);
+        // If no file selected, restore preview to current image if in edit mode
+        if (this.isEdit && this.currentImagePath) {
+          this.imagePreview.set(`${environment.imageUrl}${this.currentImagePath}`);
+        } else {
+          this.imagePreview.set(null);
+        }
+        this.hasNewImage = false;
       }
     } catch (error: any) {
       console.error('Error processing image:', error);
       this.hotToastService.error(error.message || 'Failed to process image');
-      this.imagePreview.set(null);
+
+      // Restore preview to current image if in edit mode
+      if (this.isEdit && this.currentImagePath) {
+        this.imagePreview.set(`${environment.imageUrl}${this.currentImagePath}`);
+      } else {
+        this.imagePreview.set(null);
+      }
+      this.hasNewImage = false;
     }
   }
 
   removeImage(): void {
     this.imagePreview.set(null);
+    this.hasNewImage = false;
+    this.currentImagePath = null; // Mark that we want to delete the current image
+
     const emptyImage = getEmptyImageData();
     this.articleForm.patchValue({
       image: {
@@ -136,8 +159,42 @@ export class AddArticles {
   onSubmit(): void {
     if (this.articleForm.valid) {
       const formData: ArticleFormData = this.articleForm.value;
+
       if (this.isEdit) {
-        this.articlesService.updateArticle(this.id!, { id: this.id!, ...formData }).subscribe(
+        // Prepare update data
+        const updateData: any = {
+          id: this.id!,
+          titleAr: formData.titleAr,
+          bodyAr: formData.bodyAr,
+          titleEn: formData.titleEn,
+          bodyEn: formData.bodyEn,
+          order: formData.order,
+          categoryId: formData.categoryId,
+        };
+
+        // Determine deleteCurrentImage value
+        // If user removed image OR uploaded a new one, set deleteCurrentImage to true
+        // If keeping existing image (no new image and currentImagePath still exists), set to false
+        if (this.hasNewImage) {
+          // User uploaded a new image - delete old and upload new
+          updateData.deleteCurrentImage = true;
+          updateData.image = formData.image;
+        } else if (this.currentImagePath) {
+          // User is keeping the existing image - don't delete it, don't send image
+          updateData.deleteCurrentImage = false;
+          // Don't send image object when keeping existing image
+        } else {
+          // User removed the image - delete it
+          updateData.deleteCurrentImage = true;
+          // Send empty image data
+          updateData.image = {
+            name: '',
+            extension: '',
+            data: ''
+          };
+        }
+
+        this.articlesService.updateArticle(this.id!, updateData).subscribe(
           (response: any) => {
             this.hotToastService.success('Article updated successfully');
             this.router.navigate(['/articles']);
@@ -147,6 +204,7 @@ export class AddArticles {
           }
         );
       } else {
+        // For adding new article, send as before
         this.articlesService.addArticle(formData).subscribe(
           (response: any) => {
             this.hotToastService.success('Article added successfully');
@@ -174,5 +232,9 @@ export class AddArticles {
 
   get imageGroup() {
     return this.articleForm.get('image') as FormGroup;
+  }
+
+  goBack(): void {
+    this.router.navigate(['/articles']);
   }
 }

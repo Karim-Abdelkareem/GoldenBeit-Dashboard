@@ -4,8 +4,10 @@ export interface StageInterface {
   nameEn: string;
   year: string;
   projectId: string;
+  cityIds: string[];
   projectNameAr?: string;
   projectNameEn?: string;
+  cityNames?: string[];
 }
 
 export interface Stage {
@@ -13,4 +15,5 @@ export interface Stage {
   nameEn: string;
   year: string;
   projectId: string;
+  cityIds: string[];
 }

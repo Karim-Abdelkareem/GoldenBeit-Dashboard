@@ -11,8 +11,9 @@ export class FaQuestionService {
 
   getFaQuestions(page: number = 1, pageSize: number = 9) {
     return this.http.post(`${environment.apiUrl}/v1/faquestion/search`, {
-      page,
+      pageNumber: page,
       pageSize,
+      orderBy: ['createdOn desc'],
     });
   }
   getFaQuestion(id: string) {

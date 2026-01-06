@@ -10,8 +10,9 @@ export class UnitTypeService {
 
   getUnitTypes(page: number = 1, pageSize: number = 9) {
     return this.http.post(`${environment.apiUrl}/v1/unittype/search`, {
-      page,
+      pageNumber: page,
       pageSize,
+      orderBy: ['createdOn desc'],
     });
   }
 

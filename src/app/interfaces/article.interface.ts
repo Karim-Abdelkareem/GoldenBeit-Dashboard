@@ -13,6 +13,7 @@ export interface ArticleFormData {
   order: number;
   categoryId: string;
   image: ArticleImage;
+  deleteCurrentImage?: boolean;
 }
 
 export interface Article {
@@ -23,6 +24,8 @@ export interface Article {
   bodyEn: string;
   order: number;
   categoryId: string;
+  categoryNameAr: string;
+  categoryNameEn: string;
   imagePath: string;
   createdAt: string;
 }

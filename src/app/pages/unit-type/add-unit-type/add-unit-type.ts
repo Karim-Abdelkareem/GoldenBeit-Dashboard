@@ -22,6 +22,8 @@ export class AddUnitType {
   isEdit = false;
   id: string | null = null;
   imageUrl = environment.imageUrl;
+  currentImagePath: string | null = null;
+  hasNewImage = false;
   protected readonly ArrowLeft = ArrowLeft;
 
   constructor(
@@ -53,17 +55,13 @@ export class AddUnitType {
             this.unitTypeForm.patchValue({
               nameAr: response.nameAr || '',
               nameEn: response.nameEn || '',
-              image: response.image || {
-                name: '',
-                extension: '',
-                data: '',
-              },
             });
-            // Handle image preview
-            if (response.image?.data) {
-              // If image object has data, use it for preview
-              this.imagePreview.set(response.image.data);
-            } else if (response.imagePath) {
+            
+            // Handle image preview and track current image path
+            if (response.imagePath) {
+              // Store the current image path
+              this.currentImagePath = response.imagePath;
+              
               // If imagePath exists, use it for preview (prepend base URL if needed)
               const imagePath = response.imagePath.startsWith('http') 
                 ? response.imagePath 
@@ -100,6 +98,10 @@ export class AddUnitType {
       const result = await processImageInput(input);
 
       if (result) {
+        // Clear original image path when new image is selected
+        this.currentImagePath = null;
+        this.hasNewImage = true;
+        
         // Update preview
         this.imagePreview.set(result.preview);
 
@@ -112,18 +114,33 @@ export class AddUnitType {
           },
         });
       } else {
-        // If no file selected, clear preview
-        this.imagePreview.set(null);
+        // If no file selected, restore preview to current image if in edit mode
+        if (this.isEdit && this.currentImagePath) {
+          this.imagePreview.set(`${this.imageUrl}${this.currentImagePath}`);
+        } else {
+          this.imagePreview.set(null);
+        }
+        this.hasNewImage = false;
       }
     } catch (error: any) {
       console.error('Error processing image:', error);
       this.hotToastService.error(error.message || 'Failed to process image');
-      this.imagePreview.set(null);
+      
+      // Restore preview to current image if in edit mode
+      if (this.isEdit && this.currentImagePath) {
+        this.imagePreview.set(`${this.imageUrl}${this.currentImagePath}`);
+      } else {
+        this.imagePreview.set(null);
+      }
+      this.hasNewImage = false;
     }
   }
 
   removeImage(): void {
     this.imagePreview.set(null);
+    this.hasNewImage = false;
+    this.currentImagePath = null; // Mark that we want to delete the current image
+    
     const emptyImage = getEmptyImageData();
     this.unitTypeForm.patchValue({
       image: {
@@ -159,7 +176,37 @@ export class AddUnitType {
     const formValue = this.unitTypeForm.value;
 
     if (this.isEdit && this.id) {
-      this.unitTypeService.updateUnitType(this.id, { id: this.id, ...formValue }).subscribe(
+      // Prepare update data
+      const updateData: any = {
+        id: this.id,
+        nameAr: formValue.nameAr,
+        nameEn: formValue.nameEn,
+      };
+
+      // Determine deleteCurrentImage value
+      const imageData = formValue.image;
+      const hasImageData = imageData && imageData.data && imageData.data.trim() !== '';
+      
+      if (this.hasNewImage && hasImageData) {
+        // User uploaded a new image - delete old and upload new
+        updateData.deleteCurrentImage = true;
+        updateData.image = imageData;
+      } else if (this.currentImagePath) {
+        // User is keeping the existing image - don't delete it, don't send image
+        updateData.deleteCurrentImage = false;
+        // Don't send image object when keeping existing image
+      } else {
+        // User removed the image - delete it
+        updateData.deleteCurrentImage = true;
+        // Send empty image data
+        updateData.image = {
+          name: '',
+          extension: '',
+          data: ''
+        };
+      }
+
+      this.unitTypeService.updateUnitType(this.id, updateData).subscribe(
         (response: any) => {
           this.hotToastService.success('Unit type updated successfully');
           this.router.navigate(['/unit-type']);

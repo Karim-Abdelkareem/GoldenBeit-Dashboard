@@ -80,4 +80,8 @@ export class AddArticleCategory implements OnInit {
   get f() {
     return this.categoryForm.controls;
   }
+
+  goBack(): void {
+    this.router.navigate(['/article-categories']);
+  }
 }

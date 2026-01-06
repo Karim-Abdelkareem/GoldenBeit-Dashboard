@@ -77,17 +77,18 @@ export class Project {
 
   loadProjects(): void {
     this.loading.set(true);
-    const currentPage = this.page();
-    this.projectService.getProjects(currentPage, this.itemsPerPage()).subscribe(
+    const requestedPage = this.page();
+    this.projectService.getProjects(requestedPage, this.itemsPerPage()).subscribe(
       (response: any) => {
         this.projects.set(response.data || []);
         this.totalPages.set(response.totalPages || 1);
         this.totalItems.set(response.totalCount || 0);
-        this.page.set(currentPage);
+        this.page.set(response.currentPage || requestedPage); // Use response's currentPage
         this.hasNextPage.set(response.hasNextPage || false);
         this.hasPreviousPage.set(response.hasPreviousPage || false);
 
         const totalPages = response.totalPages || 1;
+        const currentPage = response.currentPage || requestedPage;
         this.showStartEllipsis.set(currentPage > 3);
         this.showEndEllipsis.set(currentPage < totalPages - 2);
 
@@ -132,8 +133,7 @@ export class Project {
   }
 
   viewDetails(project: ProjectInterface): void {
-    this.selectedProject = project;
-    this.detailsDialogVisible = true;
+    this.router.navigate(['/projects/details', project.id]);
   }
 
   closeDetailsDialog(): void {
@@ -154,7 +154,6 @@ export class Project {
     if (this.selectedProject) {
       this.projectService.deleteProject(this.selectedProject.id).subscribe(
         (response: any) => {
-          this.projects.set(this.projects().filter((p) => p.id !== this.selectedProject!.id));
           this.hotToastService.success(
             `Project "${
               this.selectedProject!.nameEn || this.selectedProject!.nameAr
@@ -162,7 +161,16 @@ export class Project {
           );
           this.deleteDialogVisible = false;
           this.selectedProject = null;
-          this.cdr.detectChanges();
+          
+          // Check if current page will be empty after deletion
+          const remainingItems = this.projects().length - 1;
+          if (remainingItems === 0 && this.page() > 1) {
+            // Go to previous page if current page will be empty
+            this.page.set(this.page() - 1);
+          }
+          
+          // Reload projects to update pagination
+          this.loadProjects();
         },
         (error: any) => {
           this.hotToastService.error('Failed to delete project');

@@ -8,6 +8,7 @@ export interface UnitTypeInterface {
   nameAr: string;
   nameEn: string;
   image: UnitTypeImageInterface;
+  deleteCurrentImage?: boolean;
 }
 
 export interface UnitTypeResponseInterface {

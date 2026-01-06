@@ -197,6 +197,13 @@
       </button>
       <button
         type="button"
+        (click)="goBack()"
+        class="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
         (click)="articleForm.reset()"
         class="px-6 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
       >
@@ -204,12 +211,4 @@
       </button>
     </div>
   </form>
-
-  <!-- Debug: Show form value (remove in production) -->
-  @if (articleForm.valid) {
-  <div class="mt-8 p-4 bg-gray-100 rounded-md">
-    <h3 class="font-semibold mb-2">Form Data (JSON):</h3>
-    <pre class="text-xs overflow-auto">{{ articleForm.value | json }}</pre>
-  </div>
-  }
 </div>

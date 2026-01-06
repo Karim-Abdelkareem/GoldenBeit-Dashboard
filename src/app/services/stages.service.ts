@@ -9,8 +9,9 @@ export class StagesService {
   constructor(private http: HttpClient) {}
   getStages(page: number = 1, pageSize: number = 9): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/v1/stage/search`, {
-      page,
+      pageNumber: page,
       pageSize,
+      orderBy: ['createdOn desc'],
     });
   }
   getStage(id: string): Observable<any> {

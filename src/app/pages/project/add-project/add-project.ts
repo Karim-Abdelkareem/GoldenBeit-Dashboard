@@ -271,8 +271,20 @@ export class AddProject {
         if (hasNewImage) {
           updateData.deleteCurrentImage = true;
           updateData.image = imageData;
+        } else if (this.originalImagePath) {
+          // User is keeping the existing image - don't delete it, don't send image
+          updateData.deleteCurrentImage = false;
+          // Don't send image object when keeping existing image
+        } else {
+          // User removed the image - delete it
+          updateData.deleteCurrentImage = true;
+          // Send empty image data
+          updateData.image = {
+            name: '',
+            extension: '',
+            data: ''
+          };
         }
-        // If no new image, don't send image or deleteCurrentImage (keep current image)
 
         this.projectService.updateProject(this.id, updateData).subscribe(
           (response: any) => {
@@ -285,7 +297,18 @@ export class AddProject {
         );
       } else {
         // For add: always send image (required)
-        const formData = this.projectForm.value as ProjectFormData;
+        const formData: ProjectFormData = {
+          nameAr: this.projectForm.value.nameAr,
+          nameEn: this.projectForm.value.nameEn,
+          subNameAr: this.projectForm.value.subNameAr,
+          subNameEn: this.projectForm.value.subNameEn,
+          descriptionAr: this.projectForm.value.descriptionAr,
+          descriptionEn: this.projectForm.value.descriptionEn,
+          includesAr: this.includesAr.value.filter((item: string) => item.trim() !== ''),
+          includesEn: this.includesEn.value.filter((item: string) => item.trim() !== ''),
+          image: this.projectForm.value.image,
+        };
+        
         this.projectService.addProject(formData).subscribe(
           (response: any) => {
             this.hotToastService.success('Project added successfully');

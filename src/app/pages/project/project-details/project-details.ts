@@ -1,20 +1,21 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ArticlesService } from '../../../services/articles.service';
-import { Article as ArticleData } from '../../../interfaces/article.interface';
+import { ProjectService } from '../../../services/project.service';
+import { Project as ProjectData } from '../../../interfaces/project';
 import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
 import { HotToastService } from '@ngxpert/hot-toast';
 import { environment } from '../../../environment/environment';
+import { splitIncludes } from '../../../utils/string.utils';
 
 @Component({
-  selector: 'app-article-details',
+  selector: 'app-project-details',
   imports: [CommonModule, LucideAngularModule, DatePipe],
-  templateUrl: './article-details.html',
-  styleUrl: './article-details.css',
+  templateUrl: './project-details.html',
+  styleUrl: './project-details.css',
 })
-export class ArticleDetails implements OnInit {
-  article = signal<ArticleData | null>(null);
+export class ProjectDetails implements OnInit {
+  project = signal<ProjectData | null>(null);
   loading = signal<boolean>(true);
   protected readonly ArrowLeft = ArrowLeft;
   imageUrl = environment.imageUrl;
@@ -22,41 +23,42 @@ export class ArticleDetails implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private articlesService: ArticlesService,
+    private projectService: ProjectService,
     private hotToastService: HotToastService
   ) {}
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.loadArticle(id);
+      this.loadProject(id);
     } else {
-      this.hotToastService.error('Article ID not found');
-      this.router.navigate(['/articles']);
+      this.hotToastService.error('Project ID not found');
+      this.router.navigate(['/projects']);
     }
   }
 
-  loadArticle(id: string): void {
+  loadProject(id: string): void {
     this.loading.set(true);
-    this.articlesService.getArticle(id).subscribe(
+    this.projectService.getProject(id).subscribe(
       (response: any) => {
-        this.article.set(response);
+        const data = response.data || response;
+        this.project.set(data);
         this.loading.set(false);
       },
       (error: any) => {
-        this.hotToastService.error('Failed to load article');
+        this.hotToastService.error('Failed to load project');
         this.loading.set(false);
-        this.router.navigate(['/articles']);
+        this.router.navigate(['/projects']);
       }
     );
   }
 
   goBack(): void {
-    this.router.navigate(['/articles']);
+    this.router.navigate(['/projects']);
   }
 
   getImageUrl(): string {
-    const imagePath = this.article()?.imagePath;
+    const imagePath = this.project()?.imagePath;
     if (!imagePath) {
       return '/blog/3.jpg'; // Default fallback image
     }
@@ -67,4 +69,11 @@ export class ArticleDetails implements OnInit {
     // Otherwise, prepend the base URL
     return `${this.imageUrl}${imagePath}`;
   }
+
+  parseIncludes(includes: string): string[] {
+    if (!includes) return [];
+    if (Array.isArray(includes)) return includes;
+    return splitIncludes(includes);
+  }
 }
+

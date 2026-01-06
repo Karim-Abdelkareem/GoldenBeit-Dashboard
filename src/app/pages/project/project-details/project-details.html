@@ -1,0 +1,183 @@
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+  <div class="container mx-auto px-4 py-8 max-w-7xl">
+    <!-- Back Button -->
+    <button
+      (click)="goBack()"
+      class="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-lg bg-white shadow-sm hover:shadow-md transition-all duration-300 text-gray-700 hover:text-[#0d5a4b] group"
+    >
+      <lucide-angular [img]="ArrowLeft" class="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+      <span class="font-medium">Back to Projects</span>
+    </button>
+
+    @if (loading()) {
+    <div class="flex justify-center items-center py-20">
+      <div class="flex flex-col items-center gap-4">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0d5a4b]"></div>
+        <div class="text-gray-500 font-medium">Loading project...</div>
+      </div>
+    </div>
+    } @else if (project()) {
+    <!-- Hero Image Section -->
+    <div class="relative h-[500px] overflow-hidden rounded-2xl shadow-2xl mb-12 bg-gradient-to-br from-gray-900 to-gray-700">
+      <img
+        [src]="getImageUrl()"
+        [alt]="project()?.nameEn"
+        class="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+        onerror="this.src='/blog/3.jpg'"
+      />
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+      
+      <!-- Floating Date Card -->
+      @if (project()?.createdOn) {
+      <div class="absolute bottom-8 left-8">
+        <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/95 backdrop-blur-md shadow-xl">
+          <svg class="w-5 h-5 text-[#0d5a4b]" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+          </svg>
+          <span class="text-sm font-medium text-gray-800">{{ project()?.createdOn | date : 'MMM dd, yyyy' }}</span>
+        </div>
+      </div>
+      }
+    </div>
+
+    <!-- Project Names Section -->
+    <div class="grid lg:grid-cols-2 gap-8 mb-12">
+      <!-- English Names -->
+      <div class="space-y-4">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="h-1 w-16 bg-gradient-to-r from-[#0d5a4b] to-[#e2b43a] rounded-full"></div>
+          <span class="text-xs font-bold text-gray-600 uppercase tracking-wider">English</span>
+        </div>
+        
+        <div>
+          <h1 class="text-4xl lg:text-5xl font-bold mb-3 leading-tight bg-gradient-to-r from-[#0d5a4b] to-[#0f6b5a] bg-clip-text text-transparent">
+            {{ project()?.nameEn }}
+          </h1>
+          @if (project()?.subNameEn) {
+          <p class="text-xl text-gray-600 font-medium">{{ project()?.subNameEn }}</p>
+          }
+        </div>
+      </div>
+
+      <!-- Arabic Names -->
+      <div class="space-y-4 lg:border-l-2 lg:border-[#e2b43a]/30 lg:pl-8" dir="rtl">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="h-1 w-16 bg-gradient-to-l from-[#0d5a4b] to-[#e2b43a] rounded-full"></div>
+          <span class="text-xs font-bold text-gray-600 uppercase tracking-wider">العربية</span>
+        </div>
+        
+        <div>
+          <h1 class="text-4xl lg:text-5xl font-bold mb-3 leading-tight bg-gradient-to-r from-[#0d5a4b] to-[#0f6b5a] bg-clip-text text-transparent">
+            {{ project()?.nameAr }}
+          </h1>
+          @if (project()?.subNameAr) {
+          <p class="text-xl text-gray-600 font-medium">{{ project()?.subNameAr }}</p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Descriptions Section -->
+    @if (project()?.descriptionEn || project()?.descriptionAr) {
+    <div class="mb-12">
+      <h2 class="text-2xl font-bold text-[#0d5a4b] mb-6">Description</h2>
+      <div class="grid lg:grid-cols-2 gap-8">
+        @if (project()?.descriptionEn) {
+        <div class="bg-white/50 backdrop-blur-sm rounded-xl p-6 shadow-sm">
+          <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wider mb-3">English</h3>
+          <p class="text-gray-700 whitespace-pre-wrap leading-relaxed text-lg">
+            {{ project()?.descriptionEn }}
+          </p>
+        </div>
+        }
+        
+        @if (project()?.descriptionAr) {
+        <div class="bg-white/50 backdrop-blur-sm rounded-xl p-6 shadow-sm" dir="rtl">
+          <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wider mb-3">العربية</h3>
+          <p class="text-gray-700 whitespace-pre-wrap leading-relaxed text-lg">
+            {{ project()?.descriptionAr }}
+          </p>
+        </div>
+        }
+      </div>
+    </div>
+    }
+
+    <!-- Includes Section -->
+    @if (project()?.includesEn || project()?.includesAr) {
+    <div class="mb-12">
+      <h2 class="text-2xl font-bold text-[#0d5a4b] mb-6">What's Included</h2>
+      <div class="grid lg:grid-cols-2 gap-8">
+        @if (project()?.includesEn) {
+        <div class="bg-white/50 backdrop-blur-sm rounded-xl p-6 shadow-sm">
+          <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wider mb-4">English</h3>
+          <ul class="space-y-3">
+            @for (item of parseIncludes(project()?.includesEn!); track $index) {
+            <li class="flex items-start gap-3">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-[#0d5a4b] flex items-center justify-center text-white text-xs font-bold mt-0.5">
+                ✓
+              </span>
+              <span class="text-gray-700 leading-relaxed flex-1 text-base">{{ item }}</span>
+            </li>
+            }
+          </ul>
+        </div>
+        }
+        
+        @if (project()?.includesAr) {
+        <div class="bg-white/50 backdrop-blur-sm rounded-xl p-6 shadow-sm" dir="rtl">
+          <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wider mb-4">العربية</h3>
+          <ul class="space-y-3">
+            @for (item of parseIncludes(project()?.includesAr!); track $index) {
+            <li class="flex items-start gap-3">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-[#0d5a4b] flex items-center justify-center text-white text-xs font-bold mt-0.5">
+                ✓
+              </span>
+              <span class="text-gray-700 leading-relaxed flex-1 text-base">{{ item }}</span>
+            </li>
+            }
+          </ul>
+        </div>
+        }
+      </div>
+    </div>
+    }
+
+    <!-- Project Footer with ID -->
+    <div class="mt-16 pt-8 border-t-2 border-gray-300">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div class="flex items-center gap-3">
+          <span class="text-sm font-semibold text-gray-600">Project ID:</span>
+          <code class="px-4 py-2 bg-white rounded-lg font-mono text-sm text-gray-700 shadow-sm">{{ project()?.id }}</code>
+        </div>
+        
+        <button
+          (click)="goBack()"
+          class="px-8 py-3 rounded-lg bg-gradient-to-r from-[#0d5a4b] to-[#0f6b5a] text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+        >
+          Back to List
+        </button>
+      </div>
+    </div>
+    } @else {
+    <div class="flex justify-center items-center py-20">
+      <div class="text-center">
+        <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-white shadow-lg flex items-center justify-center">
+          <svg class="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <p class="text-gray-700 text-2xl font-bold mb-2">Project Not Found</p>
+        <p class="text-gray-500 text-base mb-8">The project you're looking for doesn't exist or has been removed.</p>
+        <button
+          (click)="goBack()"
+          class="px-8 py-3 rounded-lg bg-gradient-to-r from-[#e2b43a] to-[#d4a530] text-[#0a3022] font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+        >
+          Back to Projects
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+</div>
+

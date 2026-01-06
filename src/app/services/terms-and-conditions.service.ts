@@ -9,8 +9,9 @@ export class TermsAndConditionsService {
   constructor(private http: HttpClient) {}
   getTermsAndConditions(page: number = 1, pageSize: number = 9): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/v1/termcondition/search`, {
-      page,
+      pageNumber: page,
       pageSize,
+      orderBy: ['createdOn desc'],
     });
   }
   getTermAndCondition(id: string): Observable<any> {

@@ -81,17 +81,20 @@ export class Stages {
 
   loadStages(): void {
     this.loading.set(true);
-    const currentPage = this.page();
-    this.stagesService.getStages(currentPage, this.itemsPerPage()).subscribe(
+    const requestedPage = this.page();
+    console.log('Requesting page:', requestedPage); // Debug log
+    this.stagesService.getStages(requestedPage, this.itemsPerPage()).subscribe(
       (response: any) => {
+        console.log('Received response:', response); // Debug log
         this.stages.set(response.data || []);
         this.totalPages.set(response.totalPages || 1);
         this.totalItems.set(response.totalCount || 0);
-        this.page.set(currentPage);
+        this.page.set(response.currentPage || requestedPage); // Use response's currentPage
         this.hasNextPage.set(response.hasNextPage || false);
         this.hasPreviousPage.set(response.hasPreviousPage || false);
 
         const totalPages = response.totalPages || 1;
+        const currentPage = response.currentPage || requestedPage;
         this.showStartEllipsis.set(currentPage > 3);
         this.showEndEllipsis.set(currentPage < totalPages - 2);
 
@@ -158,7 +161,6 @@ export class Stages {
     if (this.selectedStage && this.selectedStage.id) {
       this.stagesService.deleteStage(this.selectedStage.id).subscribe(
         (response: any) => {
-          this.stages.set(this.stages().filter((s) => s.id !== this.selectedStage!.id));
           this.hotToastService.success(
             `Stage "${
               this.selectedStage!.nameEn || this.selectedStage!.nameAr
@@ -166,7 +168,16 @@ export class Stages {
           );
           this.deleteDialogVisible = false;
           this.selectedStage = null;
-          this.cdr.detectChanges();
+
+          // Check if current page will be empty after deletion
+          const remainingItems = this.stages().length - 1;
+          if (remainingItems === 0 && this.page() > 1) {
+            // Go to previous page if current page will be empty
+            this.page.set(this.page() - 1);
+          }
+
+          // Reload stages to update pagination
+          this.loadStages();
         },
         (error: any) => {
           this.hotToastService.error('Failed to delete stage');

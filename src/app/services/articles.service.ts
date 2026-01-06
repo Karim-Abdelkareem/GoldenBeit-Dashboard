@@ -14,7 +14,9 @@ export class ArticlesService {
   }
 
   getArticles() {
-    return this.http.post(`${environment.apiUrl}/v1/article/search`, {});
+    return this.http.post(`${environment.apiUrl}/v1/article/search`, {
+      orderBy: ['createdOn desc'],
+    });
   }
 
   updateArticle(id: string, article: ArticleFormData) {

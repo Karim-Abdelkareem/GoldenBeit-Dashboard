@@ -10,8 +10,9 @@ export class EstateunitService {
 
   getEstateUnits(page: number = 1, pageSize: number = 9) {
     return this.http.post(`${environment.apiUrl}/v1/estateunit/search`, {
-      page,
+      pageNumber: page,
       pageSize,
+      orderBy: ['createdOn desc'],
     });
   }
 

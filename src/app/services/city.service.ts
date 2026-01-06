@@ -13,6 +13,7 @@ export class CityService {
     const requestBody = {
       pageNumber: page, // API uses 1-based indexing (based on response currentPage: 1)
       pageSize: pageSize,
+      orderBy: ['createdOn desc'],
     };
     return this.http.post(`${environment.apiUrl}/v1/city/search`, requestBody, {
       headers: {

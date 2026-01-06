@@ -9,7 +9,9 @@ export class ContactUsMsgService {
   constructor(private http: HttpClient) {}
 
   getContactUsMessages() {
-    return this.http.post<any[]>(`${environment.apiUrl}/v1/contactusmsg/search`, {});
+    return this.http.post<any[]>(`${environment.apiUrl}/v1/contactusmsg/search`, {
+      orderBy: ['createdOn desc'],
+    });
   }
 
   getContactUsMessage(id: string) {
