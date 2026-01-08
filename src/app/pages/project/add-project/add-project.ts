@@ -1,14 +1,21 @@
-import { Component, ViewChild, ElementRef, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, signal, ChangeDetectorRef, HostListener } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Plus, X } from 'lucide-angular';
 import { ProjectFormData } from '../../../interfaces/project';
 import { ProjectService } from '../../../services/project.service';
+import { UnitTypeService } from '../../../services/unit-type.service';
 import { HotToastService } from '@ngxpert/hot-toast';
 import { splitIncludes, joinIncludes } from '../../../utils/string.utils';
 import { processImageInput, getEmptyImageData } from '../../../utils/image.utils';
 import { environment } from '../../../environment/environment';
+
+interface UnitTypeOption {
+  id: string;
+  nameEn: string;
+  nameAr: string;
+}
 
 @Component({
   selector: 'app-add-project',
@@ -25,6 +32,9 @@ export class AddProject {
   id: string | null = null;
   imageUrl = environment.imageUrl;
   originalImagePath: string | null = null; // Track original image path for edit mode
+  unitTypes = signal<UnitTypeOption[]>([]);
+  loadingUnitTypes = signal<boolean>(true);
+  unitTypeDropdownOpen = false;
   protected readonly ArrowLeft = ArrowLeft;
   protected readonly Plus = Plus;
   protected readonly X = X;
@@ -32,6 +42,7 @@ export class AddProject {
   constructor(
     private fb: FormBuilder,
     private projectService: ProjectService,
+    private unitTypeService: UnitTypeService,
     private hotToastService: HotToastService,
     private router: Router,
     private route: ActivatedRoute,
@@ -46,6 +57,7 @@ export class AddProject {
       descriptionEn: ['', [Validators.required]],
       includesAr: this.fb.array([this.fb.control('', Validators.required)]),
       includesEn: this.fb.array([this.fb.control('', Validators.required)]),
+      unitTypeIds: [[], [Validators.required, Validators.minLength(1)]],
       image: this.fb.group({
         name: [''],
         extension: [''],
@@ -55,6 +67,7 @@ export class AddProject {
   }
 
   ngOnInit(): void {
+    this.loadUnitTypes();
     this.route.params.subscribe((params) => {
       this.id = params['id'];
       this.isEdit = !!this.id;
@@ -108,6 +121,14 @@ export class AddProject {
               this.includesEn.push(this.fb.control('', Validators.required));
             }
 
+            // Extract unitTypeIds from unitTypes array if available, otherwise use unitTypeIds directly
+            let unitTypeIds: string[] = [];
+            if (data.unitTypes && Array.isArray(data.unitTypes) && data.unitTypes.length > 0) {
+              unitTypeIds = data.unitTypes.map((unitType: any) => unitType.unitTypeId).filter((id: string) => !!id);
+            } else if (data.unitTypeIds && Array.isArray(data.unitTypeIds)) {
+              unitTypeIds = data.unitTypeIds;
+            }
+
             this.projectForm.patchValue({
               nameAr: data.nameAr || '',
               nameEn: data.nameEn || '',
@@ -115,7 +136,11 @@ export class AddProject {
               subNameEn: data.subNameEn || '',
               descriptionAr: data.descriptionAr || '',
               descriptionEn: data.descriptionEn || '',
+              unitTypeIds: unitTypeIds,
             });
+            // Mark unitTypeIds as touched and dirty to ensure proper form state
+            this.projectForm.get('unitTypeIds')?.markAsTouched();
+            this.projectForm.get('unitTypeIds')?.markAsDirty();
 
             // Handle image using image utils - convert imagePath to preview URL
             if (data.imagePath) {
@@ -265,6 +290,7 @@ export class AddProject {
           descriptionEn: this.projectForm.value.descriptionEn,
           includesAr: this.includesAr.value.filter((item: string) => item.trim() !== ''),
           includesEn: this.includesEn.value.filter((item: string) => item.trim() !== ''),
+          unitTypeIds: this.projectForm.value.unitTypeIds || [],
         };
 
         // If user selected a new image, add deleteCurrentImage: true and image object
@@ -306,6 +332,7 @@ export class AddProject {
           descriptionEn: this.projectForm.value.descriptionEn,
           includesAr: this.includesAr.value.filter((item: string) => item.trim() !== ''),
           includesEn: this.includesEn.value.filter((item: string) => item.trim() !== ''),
+          unitTypeIds: this.projectForm.value.unitTypeIds || [],
           image: this.projectForm.value.image,
         };
         
@@ -335,5 +362,94 @@ export class AddProject {
 
   goBack(): void {
     this.router.navigate(['/projects']);
+  }
+
+  loadUnitTypes(): void {
+    this.loadingUnitTypes.set(true);
+    // Fetch all unit types for the dropdown
+    this.unitTypeService.getUnitTypes(1, 1000).subscribe(
+      (response: any) => {
+        const unitTypesList = response.data || [];
+        this.unitTypes.set(
+          unitTypesList.map((unitType: any) => ({
+            id: unitType.id,
+            nameEn: unitType.nameEn || unitType.nameAr || 'Untitled Unit Type',
+            nameAr: unitType.nameAr || unitType.nameEn || 'نوع وحدة بدون عنوان',
+          }))
+        );
+        this.loadingUnitTypes.set(false);
+        this.cdr.detectChanges();
+      },
+      (error: any) => {
+        console.error('Error loading unit types:', error);
+        this.hotToastService.error('Failed to load unit types');
+        this.loadingUnitTypes.set(false);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const clickedInside = target.closest('.unit-type-dropdown-container');
+    
+    if (!clickedInside && this.unitTypeDropdownOpen) {
+      this.unitTypeDropdownOpen = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  toggleUnitTypeDropdown(): void {
+    this.unitTypeDropdownOpen = !this.unitTypeDropdownOpen;
+  }
+
+  isUnitTypeSelected(unitTypeId: string): boolean {
+    const selectedUnitTypes = this.projectForm.get('unitTypeIds')?.value || [];
+    return selectedUnitTypes.includes(unitTypeId);
+  }
+
+  toggleUnitType(unitTypeId: string): void {
+    const currentUnitTypes = this.projectForm.get('unitTypeIds')?.value || [];
+    const index = currentUnitTypes.indexOf(unitTypeId);
+    
+    if (index > -1) {
+      // Remove unit type
+      currentUnitTypes.splice(index, 1);
+    } else {
+      // Add unit type
+      currentUnitTypes.push(unitTypeId);
+    }
+    
+    this.projectForm.patchValue({ unitTypeIds: currentUnitTypes });
+    this.projectForm.get('unitTypeIds')?.markAsTouched();
+  }
+
+  getSelectedUnitTypesText(): string {
+    const selectedUnitTypes = this.projectForm.get('unitTypeIds')?.value || [];
+    if (selectedUnitTypes.length === 0) {
+      return 'Select unit types';
+    }
+    
+    const unitTypeNames = this.unitTypes()
+      .filter(unitType => selectedUnitTypes.includes(unitType.id))
+      .map(unitType => unitType.nameEn);
+    
+    if (unitTypeNames.length <= 2) {
+      return unitTypeNames.join(', ');
+    }
+    
+    return `${unitTypeNames.length} unit types selected`;
+  }
+
+  selectAllUnitTypes(): void {
+    const allUnitTypeIds = this.unitTypes().map(unitType => unitType.id);
+    this.projectForm.patchValue({ unitTypeIds: allUnitTypeIds });
+    this.projectForm.get('unitTypeIds')?.markAsTouched();
+  }
+
+  clearAllUnitTypes(): void {
+    this.projectForm.patchValue({ unitTypeIds: [] });
+    this.projectForm.get('unitTypeIds')?.markAsTouched();
   }
 }

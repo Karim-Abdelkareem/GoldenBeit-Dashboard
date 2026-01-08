@@ -9,6 +9,7 @@ import {
   Eye,
   Calendar,
   Building2,
+  MapPin,
 } from 'lucide-angular';
 import { StageInterface } from '../../interfaces/stage.interface';
 import { StagesService } from '../../services/stages.service';
@@ -17,9 +18,21 @@ import { Router } from '@angular/router';
 import { DialogModule } from 'primeng/dialog';
 import { HotToastService } from '@ngxpert/hot-toast';
 
+interface CityInfo {
+  id: string;
+  stageId: string;
+  cityId: string;
+  stageNameAr: string;
+  stageNameEn: string;
+  cityNameAr: string;
+  cityNameEn: string;
+}
+
 interface Stage extends StageInterface {
   projectNameAr?: string;
   projectNameEn?: string;
+  cities?: CityInfo[];
+  cityNames?: string[];
 }
 
 @Component({
@@ -51,6 +64,7 @@ export class Stages {
   protected readonly Eye = Eye;
   protected readonly Calendar = Calendar;
   protected readonly Building2 = Building2;
+  protected readonly MapPin = MapPin;
 
   // Computed signal for visible page numbers
   visiblePages = computed(() => {
@@ -79,14 +93,41 @@ export class Stages {
     this.loadStages();
   }
 
+  getCityNames(stage: Stage | null): string[] {
+    if (!stage) return [];
+
+    // First try to use cityNames if available
+    if (stage.cityNames && stage.cityNames.length > 0) {
+      return stage.cityNames;
+    }
+
+    // Otherwise, extract from cities array
+    if (stage.cities && stage.cities.length > 0) {
+      return stage.cities.map((city) => city.cityNameEn || city.cityNameAr || 'Unknown City');
+    }
+
+    return [];
+  }
+
   loadStages(): void {
     this.loading.set(true);
     const requestedPage = this.page();
-    console.log('Requesting page:', requestedPage); // Debug log
     this.stagesService.getStages(requestedPage, this.itemsPerPage()).subscribe(
       (response: any) => {
-        console.log('Received response:', response); // Debug log
-        this.stages.set(response.data || []);
+        const stagesData = (response.data || []).map((stage: any) => {
+          // Extract city names from cities array if available
+          if (stage.cities && Array.isArray(stage.cities) && stage.cities.length > 0) {
+            stage.cityNames = stage.cities.map(
+              (city: CityInfo) => city.cityNameEn || city.cityNameAr || 'Unknown City'
+            );
+            // Extract cityIds from cities array if not already present
+            if (!stage.cityIds || stage.cityIds.length === 0) {
+              stage.cityIds = stage.cities.map((city: CityInfo) => city.cityId);
+            }
+          }
+          return stage;
+        });
+        this.stages.set(stagesData);
         this.totalPages.set(response.totalPages || 1);
         this.totalItems.set(response.totalCount || 0);
         this.page.set(response.currentPage || requestedPage); // Use response's currentPage

@@ -64,6 +64,24 @@
           <p class="ibm-plex-sans-arabic-regular text-gray-500 text-sm text-ellipsis line-clamp-3">
             {{ project.descriptionEn || project.descriptionAr }}
           </p>
+          
+          <!-- Unit Types -->
+          @if (getUnitTypeNames(project).length > 0) {
+          <div class="flex items-start gap-2 pt-2 border-t border-gray-100">
+            <lucide-angular [img]="Tag" class="w-4 h-4 text-gray-500 mt-0.5" />
+            <div class="flex-1">
+              <p class="text-xs text-gray-500 mb-2">Unit Types</p>
+              <div class="flex flex-wrap gap-1.5">
+                @for (unitTypeName of getUnitTypeNames(project); track unitTypeName) {
+                <span class="px-2 py-1 bg-[#0d5a4b]/10 text-[#0d5a4b] rounded-md text-xs font-medium">
+                  {{ unitTypeName }}
+                </span>
+                }
+              </div>
+            </div>
+          </div>
+          }
+          
           <p class="ibm-plex-sans-arabic-regular text-gray-500 text-xs">
             {{ formatDate(project.createdOn) }}
           </p>

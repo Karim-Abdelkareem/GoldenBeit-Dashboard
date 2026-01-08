@@ -83,6 +83,23 @@
           </div>
         </div>
         }
+
+        <!-- Cities -->
+        @if (getCityNames(stage).length > 0) {
+        <div class="flex items-start gap-2 pt-2 border-t border-gray-100">
+          <lucide-angular [img]="MapPin" class="w-4 h-4 text-gray-500 mt-0.5" />
+          <div class="flex-1">
+            <p class="text-xs text-gray-500 mb-2">Cities</p>
+            <div class="flex flex-wrap gap-1.5">
+              @for (cityName of getCityNames(stage); track cityName) {
+              <span class="px-2 py-1 bg-[#0d5a4b]/10 text-[#0d5a4b] rounded-md text-xs font-medium">
+                {{ cityName }}
+              </span>
+              }
+            </div>
+          </div>
+        </div>
+        }
       </div>
       } @empty {
       <div class="col-span-full text-center py-12">
@@ -215,7 +232,7 @@
 
       <!-- Project -->
       @if (selectedStage.projectNameEn || selectedStage.projectNameAr) {
-      <div class="flex items-start gap-3 pt-3">
+      <div class="flex items-start gap-3 pb-3 border-b border-gray-200">
         <lucide-angular [img]="Building2" class="w-5 h-5 text-gray-500 mt-1" />
         <div class="flex-1">
           <p class="text-sm text-gray-500 mb-1">Project</p>
@@ -226,6 +243,23 @@
           selectedStage.projectNameEn) {
           <p class="text-gray-600 text-sm mt-1" dir="rtl">{{ selectedStage.projectNameAr }}</p>
           }
+        </div>
+      </div>
+      }
+
+      <!-- Cities -->
+      @if (getCityNames(selectedStage).length > 0) {
+      <div class="flex items-start gap-3 pt-3">
+        <lucide-angular [img]="MapPin" class="w-5 h-5 text-gray-500 mt-1" />
+        <div class="flex-1">
+          <p class="text-sm text-gray-500 mb-2">Cities</p>
+          <div class="flex flex-wrap gap-2">
+            @for (cityName of getCityNames(selectedStage); track cityName) {
+            <span class="px-3 py-1 bg-[#0d5a4b]/10 text-[#0d5a4b] rounded-full text-sm font-medium">
+              {{ cityName }}
+            </span>
+            }
+          </div>
         </div>
       </div>
       }

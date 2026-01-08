@@ -8,6 +8,7 @@ import {
   Plus,
   Eye,
   FolderKanban,
+  Tag,
 } from 'lucide-angular';
 import { Project as ProjectInterface } from '../../interfaces/project';
 import { ProjectService } from '../../services/project.service';
@@ -46,6 +47,7 @@ export class Project {
   protected readonly ChevronRight = ChevronRight;
   protected readonly Eye = Eye;
   protected readonly FolderKanban = FolderKanban;
+  protected readonly Tag = Tag;
   url = environment.imageUrl;
 
   // Computed signal for visible page numbers
@@ -80,7 +82,20 @@ export class Project {
     const requestedPage = this.page();
     this.projectService.getProjects(requestedPage, this.itemsPerPage()).subscribe(
       (response: any) => {
-        this.projects.set(response.data || []);
+        const projectsData = (response.data || []).map((project: any) => {
+          // Extract unit type names from unitTypes array if available
+          if (project.unitTypes && Array.isArray(project.unitTypes) && project.unitTypes.length > 0) {
+            project.unitTypeNames = project.unitTypes.map((unitType: any) => 
+              unitType.unitTypeNameEn || unitType.unitTypeNameAr || 'Unknown Unit Type'
+            );
+            // Extract unitTypeIds from unitTypes array if not already present
+            if (!project.unitTypeIds || project.unitTypeIds.length === 0) {
+              project.unitTypeIds = project.unitTypes.map((unitType: any) => unitType.unitTypeId);
+            }
+          }
+          return project;
+        });
+        this.projects.set(projectsData);
         this.totalPages.set(response.totalPages || 1);
         this.totalItems.set(response.totalCount || 0);
         this.page.set(response.currentPage || requestedPage); // Use response's currentPage
@@ -206,5 +221,23 @@ export class Project {
 
   parseIncludes(includes?: string): string[] {
     return splitIncludes(includes);
+  }
+
+  getUnitTypeNames(project: ProjectInterface | null): string[] {
+    if (!project) return [];
+    
+    // First try to use unitTypeNames if available
+    if (project.unitTypeNames && project.unitTypeNames.length > 0) {
+      return project.unitTypeNames;
+    }
+    
+    // Otherwise, extract from unitTypes array
+    if (project.unitTypes && project.unitTypes.length > 0) {
+      return project.unitTypes.map(unitType => 
+        unitType.unitTypeNameEn || unitType.unitTypeNameAr || 'Unknown Unit Type'
+      );
+    }
+    
+    return [];
   }
 }

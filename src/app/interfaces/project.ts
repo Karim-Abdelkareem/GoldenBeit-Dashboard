@@ -4,6 +4,16 @@ export interface ProjectImage {
   data: string | null;
 }
 
+export interface UnitTypeInfo {
+  id: string;
+  unitTypeId: string;
+  projectId: string;
+  unitTypeNameAr: string;
+  unitTypeNameEn: string;
+  projectNameAr: string;
+  projectNameEn: string;
+}
+
 export interface Project {
   id: string;
   nameAr: string;
@@ -16,6 +26,9 @@ export interface Project {
   includesEn: string;
   imagePath: string;
   createdOn: string;
+  unitTypeIds?: string[];
+  unitTypeNames?: string[];
+  unitTypes?: UnitTypeInfo[];
 }
 
 export interface ProjectFormData {
@@ -28,6 +41,7 @@ export interface ProjectFormData {
   descriptionEn: string;
   includesAr: string[];
   includesEn: string[];
+  unitTypeIds: string[];
   image: ProjectImage;
   deleteCurrentImage?: boolean;
 }

@@ -66,13 +66,24 @@ export class AddStages {
       if (this.isEdit) {
         this.stagesService.getStage(this.id!).subscribe(
           (response: any) => {
+            // Extract cityIds from cities array if available, otherwise use cityIds directly
+            let cityIds: string[] = [];
+            if (response.cities && Array.isArray(response.cities) && response.cities.length > 0) {
+              cityIds = response.cities.map((city: any) => city.cityId).filter((id: string) => !!id);
+            } else if (response.cityIds && Array.isArray(response.cityIds)) {
+              cityIds = response.cityIds;
+            }
+
             this.stageForm.patchValue({
               nameAr: response.nameAr || '',
               nameEn: response.nameEn || '',
               year: response.year || '',
               projectId: response.projectId || '',
-              cityIds: response.cityIds || [],
+              cityIds: cityIds,
             });
+            // Mark cityIds as touched and dirty to ensure proper form state
+            this.stageForm.get('cityIds')?.markAsTouched();
+            this.stageForm.get('cityIds')?.markAsDirty();
             this.cdr.detectChanges();
           },
           (error: any) => {
