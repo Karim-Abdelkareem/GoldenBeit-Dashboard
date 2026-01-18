@@ -37,6 +37,7 @@ export class CompanyReviews {
   protected readonly Pencil = Pencil;
   protected readonly ChevronLeft = ChevronLeft;
   protected readonly ChevronRight = ChevronRight;
+  
 
   // Computed signal for visible page numbers
   visiblePages = computed(() => {
@@ -68,6 +69,7 @@ export class CompanyReviews {
     this.companyReviewsService.getCompanyReviews(currentPage, this.itemsPerPage()).subscribe(
       (response: any) => {
         this.companyReviews.set(response.data || []);
+        console.log(this.companyReviews());
         this.totalPages.set(response.totalPages || 1);
         this.totalItems.set(response.totalCount || 0);
         this.page.set(currentPage);
@@ -114,6 +116,20 @@ export class CompanyReviews {
   deleteReview(review: CompanyReviewsInterface): void {
     this.selectedReview = review;
     this.deleteDialogVisible = true;
+    console.log(review);
+    // this.companyReviewsService.deleteCompanyReview(review?.id).subscribe(
+    //   (response: any) => {
+    //     this.hotToastService.success('Review deleted successfully');
+    //     this.deleteDialogVisible = false;
+    //     this.selectedReview = null;
+    //     this.loadReviews();
+    //   },
+    //   (error: any) => {
+    //     this.hotToastService.error('Failed to delete review');
+    //     this.deleteDialogVisible = false;
+    //     this.selectedReview = null;
+    //   }
+    // );
   }
 
   confirmDelete(): void {

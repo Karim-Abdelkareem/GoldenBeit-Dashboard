@@ -35,6 +35,7 @@ export class AddFaQuestion {
       questionEn: ['', [Validators.required]],
       answerAr: ['', [Validators.required]],
       answerEn: ['', [Validators.required]],
+      flag: [0, [Validators.required]], // 0 = selling, 1 = buying
     });
   }
   ngOnInit(): void {
@@ -61,7 +62,14 @@ export class AddFaQuestion {
 
   onSubmit(): void {
     if (this.faQuestionForm.valid) {
-      const formData = this.faQuestionForm.value as FaQuestionFormData;
+      const formValue = this.faQuestionForm.value;
+      const formData: FaQuestionFormData = {
+        questionAr: formValue.questionAr,
+        questionEn: formValue.questionEn,
+        answerAr: formValue.answerAr,
+        answerEn: formValue.answerEn,
+        flag: Number(formValue.flag), // Ensure flag is sent as number (0 or 1)
+      };
 
       if (this.isEdit && this.id) {
         this.faQuestionService.updateFaQuestion(this.id, formData).subscribe(

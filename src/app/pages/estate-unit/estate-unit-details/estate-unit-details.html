@@ -1,0 +1,566 @@
+<div class="min-h-screen bg-[#f8f9fa]">
+  @if (loading()) {
+  <div class="flex justify-center items-center py-20 min-h-screen">
+    <div class="flex flex-col items-center gap-4">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0d5a4b]"></div>
+      <div class="text-gray-500 font-medium">Loading property details...</div>
+    </div>
+  </div>
+  } @else if (estateUnit()) {
+  
+  <!-- Header Bar -->
+  <div class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+    <div class="container mx-auto px-4 py-4 max-w-7xl">
+      <div class="flex items-center justify-between">
+        <button
+          (click)="goBack()"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
+        >
+          <lucide-angular [img]="ArrowLeft" class="w-5 h-5" />
+          <span class="font-medium">Back</span>
+        </button>
+        
+        <div class="flex items-center gap-3">
+          @if (estateUnit()?.status !== undefined) {
+          <span
+            class="px-4 py-1.5 rounded-full text-sm font-semibold"
+            [ngClass]="getStatusBadge(estateUnit()?.status).class"
+          >
+            {{ getStatusBadge(estateUnit()?.status).text }}
+          </span>
+          }
+          @if (estateUnit()?.isApproved !== undefined) {
+          <span class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium"
+            [ngClass]="estateUnit()?.isApproved ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'">
+            <lucide-angular [img]="estateUnit()?.isApproved ? CheckCircle2 : XCircle" class="w-4 h-4" />
+            {{ estateUnit()?.isApproved ? 'Approved' : 'Not Approved' }}
+          </span>
+          }
+          <button
+            (click)="openUpdateDialog()"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-[#0d5a4b] text-white rounded-lg hover:bg-[#0f7a65] transition-colors font-medium"
+          >
+            <lucide-angular [img]="Edit" class="w-4 h-4" />
+            <span>Update Status</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-8 max-w-7xl">
+    <div class="grid lg:grid-cols-3 gap-8">
+      
+      <!-- Main Content - Left Side -->
+      <div class="lg:col-span-2 space-y-8">
+        
+        <!-- Image Gallery -->
+        <div class="relative rounded-2xl overflow-hidden shadow-lg bg-gray-900 aspect-[16/10]">
+          @if (getValidImages().length > 0) {
+          <swiper-container
+            class="w-full h-full"
+            slides-per-view="1"
+            navigation="true"
+            pagination="true"
+            loop="true"
+            autoplay="true"
+            autoplay-delay="4000"
+            autoplay-disable-on-interaction="false"
+          >
+            @for (image of getValidImages(); track image.id) {
+            <swiper-slide>
+              <img
+                [src]="getImageUrlFromPath(image.imagePath)"
+                [alt]="estateUnit()?.titleEn || 'Property Image'"
+                class="w-full h-full object-cover"
+                onerror="this.src='/blog/3.jpg'"
+              />
+            </swiper-slide>
+            }
+          </swiper-container>
+          <!-- Image Counter -->
+          <div class="absolute bottom-4 left-4 z-10 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm font-medium">
+            {{ getValidImages().length }} Photos
+          </div>
+          } @else {
+          <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
+            <lucide-angular [img]="Home" class="w-24 h-24 text-gray-400" />
+          </div>
+          }
+        </div>
+
+        <!-- Title Section -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm">
+          @if (estateUnit()?.titleEn || estateUnit()?.titleAr) {
+          <div class="space-y-3">
+            @if (estateUnit()?.titleEn) {
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">{{ estateUnit()?.titleEn }}</h1>
+            }
+            @if (estateUnit()?.titleAr) {
+            <h2 class="text-xl md:text-2xl font-semibold text-gray-600" dir="rtl">{{ estateUnit()?.titleAr }}</h2>
+            }
+          </div>
+          }
+          
+          <!-- Location Badge -->
+          @if (estateUnit()?.cityNameEn || estateUnit()?.location) {
+          <div class="flex items-center gap-2 mt-4 text-gray-600">
+            <lucide-angular [img]="MapPin" class="w-5 h-5 text-[#0d5a4b]" />
+            <span class="text-lg">
+              {{ estateUnit()?.cityNameEn }}
+              @if (estateUnit()?.stageNameEn) { - {{ estateUnit()?.stageNameEn }} }
+              @if (estateUnit()?.location) { , {{ estateUnit()?.location }} }
+            </span>
+          </div>
+          }
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          @if (estateUnit()?.area) {
+          <div class="bg-white rounded-xl p-4 shadow-sm flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-[#0d5a4b]/10 flex items-center justify-center">
+              <lucide-angular [img]="Ruler" class="w-6 h-6 text-[#0d5a4b]" />
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 uppercase font-medium">Area</p>
+              <p class="text-lg font-bold text-gray-900">{{ formatArea(estateUnit()?.area) }}</p>
+            </div>
+          </div>
+          }
+          @if (estateUnit()?.roomCount) {
+          <div class="bg-white rounded-xl p-4 shadow-sm flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
+              <lucide-angular [img]="BedDouble" class="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 uppercase font-medium">Bedrooms</p>
+              <p class="text-lg font-bold text-gray-900">{{ estateUnit()?.roomCount }}</p>
+            </div>
+          </div>
+          }
+          @if (estateUnit()?.bathCount) {
+          <div class="bg-white rounded-xl p-4 shadow-sm flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center">
+              <lucide-angular [img]="Bath" class="w-6 h-6 text-purple-600" />
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 uppercase font-medium">Bathrooms</p>
+              <p class="text-lg font-bold text-gray-900">{{ estateUnit()?.bathCount }}</p>
+            </div>
+          </div>
+          }
+          @if (estateUnit()?.kitchenCount) {
+          <div class="bg-white rounded-xl p-4 shadow-sm flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center">
+              <lucide-angular [img]="ChefHat" class="w-6 h-6 text-orange-600" />
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 uppercase font-medium">Kitchens</p>
+              <p class="text-lg font-bold text-gray-900">{{ estateUnit()?.kitchenCount }}</p>
+            </div>
+          </div>
+          }
+        </div>
+
+        <!-- Description -->
+        @if (estateUnit()?.descriptionEn || estateUnit()?.descriptionAr) {
+        <div class="bg-white rounded-2xl p-6 shadow-sm">
+          <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <lucide-angular [img]="FileText" class="w-5 h-5 text-[#0d5a4b]" />
+            Description
+          </h3>
+          <div class="space-y-4">
+            @if (estateUnit()?.descriptionEn) {
+            <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">{{ estateUnit()?.descriptionEn }}</p>
+            }
+            @if (estateUnit()?.descriptionAr) {
+            <div class="pt-4 border-t border-gray-100" dir="rtl">
+              <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">{{ estateUnit()?.descriptionAr }}</p>
+            </div>
+            }
+          </div>
+        </div>
+        }
+
+        <!-- Property Details -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm">
+          <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <lucide-angular [img]="Layers" class="w-5 h-5 text-[#0d5a4b]" />
+            Property Details
+          </h3>
+          <div class="grid md:grid-cols-2 gap-x-8 gap-y-4">
+            @if (estateUnit()?.unitNumber) {
+            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+              <span class="text-gray-600 flex items-center gap-2">
+                <lucide-angular [img]="Home" class="w-4 h-4" />
+                Unit Number
+              </span>
+              <span class="font-semibold text-gray-900">{{ estateUnit()?.unitNumber }}</span>
+            </div>
+            }
+            @if (estateUnit()?.buildingNumber) {
+            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+              <span class="text-gray-600 flex items-center gap-2">
+                <lucide-angular [img]="Building2" class="w-4 h-4" />
+                Building Number
+              </span>
+              <span class="font-semibold text-gray-900">{{ estateUnit()?.buildingNumber }}</span>
+            </div>
+            }
+            @if (estateUnit()?.model) {
+            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+              <span class="text-gray-600 flex items-center gap-2">
+                <lucide-angular [img]="Tag" class="w-4 h-4" />
+                Model
+              </span>
+              <span class="font-semibold text-gray-900">{{ estateUnit()?.model }}</span>
+            </div>
+            }
+            @if (estateUnit()?.view) {
+            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+              <span class="text-gray-600 flex items-center gap-2">
+                <lucide-angular [img]="Eye" class="w-4 h-4" />
+                View
+              </span>
+              <span class="font-semibold text-gray-900">{{ estateUnit()?.view }}</span>
+            </div>
+            }
+            @if (estateUnit()?.character) {
+            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+              <span class="text-gray-600 flex items-center gap-2">
+                <lucide-angular [img]="Users" class="w-4 h-4" />
+                Character
+              </span>
+              <span class="font-semibold text-gray-900">{{ estateUnit()?.character }}</span>
+            </div>
+            }
+            @if (estateUnit()?.mainAddress) {
+            <div class="flex items-center justify-between py-3 border-b border-gray-100 md:col-span-2">
+              <span class="text-gray-600 flex items-center gap-2">
+                <lucide-angular [img]="MapPin" class="w-4 h-4" />
+                Address
+              </span>
+              <span class="font-semibold text-gray-900">{{ estateUnit()?.mainAddress }}</span>
+            </div>
+            }
+            @if (estateUnit()?.latitude && estateUnit()?.longitude) {
+            <div class="flex items-center justify-between py-3 border-b border-gray-100 md:col-span-2">
+              <span class="text-gray-600 flex items-center gap-2">
+                <lucide-angular [img]="Compass" class="w-4 h-4" />
+                Coordinates
+              </span>
+              <span class="font-semibold text-gray-900">{{ estateUnit()?.latitude }}, {{ estateUnit()?.longitude }}</span>
+            </div>
+            }
+          </div>
+        </div>
+
+        <!-- Payment Details -->
+        @if (estateUnit()?.paidPrice || estateUnit()?.remainingPrice || estateUnit()?.meterPrice || estateUnit()?.overPrice || estateUnit()?.paymentMethod !== undefined || estateUnit()?.installmentPeriod) {
+        <div class="bg-white rounded-2xl p-6 shadow-sm">
+          <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <lucide-angular [img]="CreditCard" class="w-5 h-5 text-[#0d5a4b]" />
+            Payment Information
+          </h3>
+          <div class="grid md:grid-cols-2 gap-4">
+            @if (estateUnit()?.paidPrice) {
+            <div class="bg-green-50 rounded-xl p-4">
+              <p class="text-sm text-green-700 font-medium mb-1">Paid Amount</p>
+              <p class="text-xl font-bold text-green-800">{{ formatPrice(estateUnit()?.paidPrice, estateUnit()?.paidPriceCurrency) }}</p>
+            </div>
+            }
+            @if (estateUnit()?.remainingPrice) {
+            <div class="bg-amber-50 rounded-xl p-4">
+              <p class="text-sm text-amber-700 font-medium mb-1">Remaining Amount</p>
+              <p class="text-xl font-bold text-amber-800">{{ formatPrice(estateUnit()?.remainingPrice, estateUnit()?.remainingPriceCurrency) }}</p>
+            </div>
+            }
+            @if (estateUnit()?.meterPrice) {
+            <div class="bg-gray-50 rounded-xl p-4">
+              <p class="text-sm text-gray-600 font-medium mb-1">Price per m²</p>
+              <p class="text-xl font-bold text-gray-800">{{ formatPrice(estateUnit()?.meterPrice, estateUnit()?.meterPriceCurrency) }}</p>
+            </div>
+            }
+            @if (estateUnit()?.overPrice) {
+            <div class="bg-gray-50 rounded-xl p-4">
+              <p class="text-sm text-gray-600 font-medium mb-1">Over Price</p>
+              <p class="text-xl font-bold text-gray-800">{{ formatPrice(estateUnit()?.overPrice, estateUnit()?.overPriceCurrency) }}</p>
+            </div>
+            }
+            @if (estateUnit()?.paymentMethod !== undefined) {
+            <div class="bg-blue-50 rounded-xl p-4">
+              <p class="text-sm text-blue-700 font-medium mb-1">Payment Method</p>
+              <p class="text-xl font-bold text-blue-800">{{ getPaymentMethodText(estateUnit()?.paymentMethod) }}</p>
+            </div>
+            }
+            @if (estateUnit()?.installmentPeriod) {
+            <div class="bg-purple-50 rounded-xl p-4">
+              <p class="text-sm text-purple-700 font-medium mb-1">Installment Period</p>
+              <p class="text-xl font-bold text-purple-800">{{ estateUnit()?.installmentPeriod }}</p>
+            </div>
+            }
+          </div>
+        </div>
+        }
+
+        <!-- Additional Info -->
+        @if (estateUnit()?.policy || estateUnit()?.approverMessage || estateUnit()?.viewCount !== undefined || estateUnit()?.viewable !== undefined) {
+        <div class="bg-white rounded-2xl p-6 shadow-sm">
+          <h3 class="text-xl font-bold text-gray-900 mb-6">Additional Information</h3>
+          <div class="space-y-4">
+            @if (estateUnit()?.policy) {
+            <div class="p-4 bg-gray-50 rounded-xl">
+              <p class="text-sm text-gray-600 font-medium mb-1">Policy</p>
+              <p class="text-gray-800">{{ estateUnit()?.policy }}</p>
+            </div>
+            }
+            @if (estateUnit()?.approverMessage) {
+            <div class="p-4 bg-yellow-50 rounded-xl">
+              <p class="text-sm text-yellow-700 font-medium mb-1">Approver Message</p>
+              <p class="text-yellow-800">{{ estateUnit()?.approverMessage }}</p>
+            </div>
+            }
+            <div class="grid grid-cols-2 gap-4">
+              @if (estateUnit()?.viewCount !== undefined) {
+              <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                <lucide-angular [img]="Eye" class="w-5 h-5 text-gray-500" />
+                <div>
+                  <p class="text-xs text-gray-500">Views</p>
+                  <p class="font-bold text-gray-800">{{ estateUnit()?.viewCount }}</p>
+                </div>
+              </div>
+              }
+              @if (estateUnit()?.viewable !== undefined) {
+              <div class="flex items-center gap-3 p-4 rounded-xl"
+                [ngClass]="estateUnit()?.viewable ? 'bg-green-50' : 'bg-red-50'">
+                <lucide-angular [img]="estateUnit()?.viewable ? CheckCircle2 : XCircle" 
+                  class="w-5 h-5"
+                  [ngClass]="estateUnit()?.viewable ? 'text-green-600' : 'text-red-600'" />
+                <div>
+                  <p class="text-xs" [ngClass]="estateUnit()?.viewable ? 'text-green-600' : 'text-red-600'">Viewable</p>
+                  <p class="font-bold" [ngClass]="estateUnit()?.viewable ? 'text-green-800' : 'text-red-800'">
+                    {{ estateUnit()?.viewable ? 'Yes' : 'No' }}
+                  </p>
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+
+      <!-- Sidebar - Right Side -->
+      <div class="lg:col-span-1">
+        <div class="sticky top-24 space-y-6">
+          
+          <!-- Price Card -->
+          <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div class="bg-gradient-to-r from-[#0d5a4b] to-[#146b5a] p-6">
+              <p class="text-white/80 text-sm font-medium mb-1">Total Price</p>
+              @if (estateUnit()?.totalPrice) {
+              <p class="text-3xl font-bold text-white">{{ formatPrice(estateUnit()?.totalPrice, estateUnit()?.totalPriceCurrency) }}</p>
+              } @else {
+              <p class="text-2xl font-bold text-white/60">Contact for Price</p>
+              }
+            </div>
+            <div class="p-6 space-y-4">
+              @if (estateUnit()?.phoneNumber) {
+              <a href="tel:{{ estateUnit()?.phoneNumber }}" 
+                class="flex items-center justify-center gap-2 w-full py-3 px-4 bg-[#e2b43a] hover:bg-[#d4a530] text-[#0d5a4b] font-bold rounded-xl transition-colors">
+                <lucide-angular [img]="Phone" class="w-5 h-5" />
+                Call Now
+              </a>
+              <p class="text-center text-gray-600 text-sm">{{ estateUnit()?.phoneNumber }}</p>
+              }
+            </div>
+          </div>
+
+          <!-- Unit Info Card -->
+          <div class="bg-white rounded-2xl p-6 shadow-sm">
+            <h4 class="font-bold text-gray-900 mb-4">Unit Information</h4>
+            <div class="space-y-3">
+              @if (estateUnit()?.unitNumber) {
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-[#0d5a4b]/10 flex items-center justify-center">
+                  <lucide-angular [img]="Home" class="w-5 h-5 text-[#0d5a4b]" />
+                </div>
+                <div>
+                  <p class="text-xs text-gray-500">Unit #</p>
+                  <p class="font-semibold text-gray-800">{{ estateUnit()?.unitNumber }}</p>
+                </div>
+              </div>
+              }
+              @if (estateUnit()?.buildingNumber) {
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+                  <lucide-angular [img]="Building2" class="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p class="text-xs text-gray-500">Building #</p>
+                  <p class="font-semibold text-gray-800">{{ estateUnit()?.buildingNumber }}</p>
+                </div>
+              </div>
+              }
+              @if (estateUnit()?.area) {
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
+                  <lucide-angular [img]="Ruler" class="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <p class="text-xs text-gray-500">Area</p>
+                  <p class="font-semibold text-gray-800">{{ formatArea(estateUnit()?.area) }}</p>
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+
+          <!-- Location Card -->
+          @if (estateUnit()?.cityNameEn || estateUnit()?.stageNameEn) {
+          <div class="bg-white rounded-2xl p-6 shadow-sm">
+            <h4 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <lucide-angular [img]="MapPin" class="w-5 h-5 text-[#0d5a4b]" />
+              Location
+            </h4>
+            <div class="space-y-2">
+              @if (estateUnit()?.cityNameEn) {
+              <div class="flex justify-between">
+                <span class="text-gray-600">City</span>
+                <span class="font-medium text-gray-900">{{ estateUnit()?.cityNameEn }}</span>
+              </div>
+              }
+              @if (estateUnit()?.cityNameAr) {
+              <div class="flex justify-between" dir="rtl">
+                <span class="text-gray-600">المدينة</span>
+                <span class="font-medium text-gray-900">{{ estateUnit()?.cityNameAr }}</span>
+              </div>
+              }
+              @if (estateUnit()?.stageNameEn) {
+              <div class="flex justify-between pt-2 border-t border-gray-100">
+                <span class="text-gray-600">Stage</span>
+                <span class="font-medium text-gray-900">{{ estateUnit()?.stageNameEn }}</span>
+              </div>
+              }
+              @if (estateUnit()?.stageNameAr) {
+              <div class="flex justify-between" dir="rtl">
+                <span class="text-gray-600">المرحلة</span>
+                <span class="font-medium text-gray-900">{{ estateUnit()?.stageNameAr }}</span>
+              </div>
+              }
+            </div>
+          </div>
+          }
+
+          <!-- ID Card -->
+          <div class="bg-gray-100 rounded-2xl p-4">
+            <p class="text-xs text-gray-500 mb-1">Property ID</p>
+            <code class="text-sm text-gray-700 font-mono break-all">{{ estateUnit()?.id }}</code>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  } @else {
+  <!-- Not Found State -->
+  <div class="flex justify-center items-center py-20 min-h-screen">
+    <div class="text-center">
+      <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-gray-100 flex items-center justify-center">
+        <lucide-angular [img]="Home" class="w-12 h-12 text-gray-400" />
+      </div>
+      <p class="text-gray-700 text-2xl font-bold mb-2">Property Not Found</p>
+      <p class="text-gray-500 text-base mb-8">The property you're looking for doesn't exist or has been removed.</p>
+      <button
+        (click)="goBack()"
+        class="px-8 py-3 rounded-xl bg-[#0d5a4b] text-white font-semibold hover:bg-[#0a4a3d] transition-colors"
+      >
+        Back to Listings
+      </button>
+    </div>
+  </div>
+  }
+</div>
+
+<!-- Update Status Dialog -->
+<p-dialog
+  [(visible)]="updateDialogVisible"
+  [modal]="true"
+  [style]="{ width: '500px', maxWidth: '95vw' }"
+  header="Update Estate Unit Status"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeUpdateDialog()"
+>
+  <div class="flex flex-col gap-5">
+    <!-- Current Info -->
+    <div class="bg-gray-50 rounded-lg p-3">
+      <p class="text-sm text-gray-500 mb-1">Estate Unit ID</p>
+      <p class="font-semibold text-gray-800 font-mono text-sm">{{ estateUnit()?.id }}</p>
+    </div>
+
+    <!-- Status Selection -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+      <select
+        [(ngModel)]="newStatus"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+      >
+        @for (option of getStatusOptions(); track option.value) {
+        <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Approver Message -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Approver Message (Optional)</label>
+      <textarea
+        [(ngModel)]="approverMessage"
+        rows="4"
+        placeholder="Enter approver message..."
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent resize-none"
+      ></textarea>
+    </div>
+
+    <!-- Is Approved -->
+    <div>
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          [(ngModel)]="isApproved"
+          class="w-5 h-5 text-[#0d5a4b] border-gray-300 rounded focus:ring-[#0d5a4b]"
+        />
+        <span class="text-sm font-medium text-gray-700">Is Approved</span>
+      </label>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3">
+      <button
+        type="button"
+        (click)="closeUpdateDialog()"
+        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+        [disabled]="updating"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        (click)="updateStatus()"
+        [disabled]="newStatus === null || updating"
+        class="px-4 py-2 bg-[#0d5a4b] text-white rounded-lg hover:bg-[#0f7a65] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+      >
+        @if (updating) {
+        <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        Updating...
+        } @else {
+        <lucide-angular [img]="Save" class="w-4 h-4" />
+        Update Status
+        }
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

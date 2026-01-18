@@ -16,8 +16,21 @@
     <div class="grid md:grid-cols-2 xl:grid-cols-3 grid-cols-1 gap-6 px-4">
       @for (stage of stages(); track stage.id) {
       <div
-        class="col-span-1 flex flex-col gap-4 bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow"
+        class="col-span-1 flex flex-col gap-4 bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow overflow-hidden"
       >
+        <!-- Stage Image -->
+        @if (stage.imagePath) {
+        <div class="w-full h-48 overflow-hidden bg-gray-100">
+          <img
+            [src]="getImageUrl(stage.imagePath)"
+            [alt]="stage.nameEn || stage.nameAr"
+            class="w-full h-full object-cover"
+            (error)="$event.target.src = '/blog/3.jpg'"
+          />
+        </div>
+        }
+        
+        <div class="p-6 pt-4 flex flex-col gap-4">
         <!-- Header with Actions -->
         <div class="flex justify-between items-start">
           <div class="flex-1">
@@ -100,6 +113,7 @@
           </div>
         </div>
         }
+        </div>
       </div>
       } @empty {
       <div class="col-span-full text-center py-12">
@@ -199,6 +213,18 @@
   >
     @if (selectedStage) {
     <div class="flex flex-col gap-4">
+      <!-- Stage Image -->
+      @if (selectedStage.imagePath) {
+      <div class="w-full h-64 overflow-hidden bg-gray-100 rounded-lg mb-4">
+        <img
+          [src]="getImageUrl(selectedStage.imagePath)"
+          [alt]="selectedStage.nameEn || selectedStage.nameAr"
+          class="w-full h-full object-cover"
+          (error)="$event.target.src = '/blog/3.jpg'"
+        />
+      </div>
+      }
+      
       <!-- Name -->
       <div class="flex items-start gap-3 pb-3 border-b border-gray-200">
         <lucide-angular [img]="Building2" class="w-5 h-5 text-gray-500 mt-1" />

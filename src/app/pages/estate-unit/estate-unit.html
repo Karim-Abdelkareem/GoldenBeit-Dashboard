@@ -1,6 +1,163 @@
 <div class="my-6 p-4">
-  <div class="flex justify-between items-center border-b border-gray-300 pb-4">
+  <div class="flex justify-between items-center border-b border-gray-300 pb-4 mb-6">
     <h1 class="text-3xl font-bold text-dark-green">Estate Units</h1>
+  </div>
+
+  <!-- Search and Filter Section -->
+  <div class="mb-6 space-y-4">
+    <!-- Search Bar -->
+    <div class="flex gap-4 items-center">
+      <div class="flex-1 relative">
+        <lucide-angular [img]="Search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearch()"
+          placeholder="Search by title (English or Arabic)..."
+          class="w-full pl-16 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+        />
+      </div>
+      
+      <!-- Filter Button -->
+      <div class="relative filter-dropdown-container">
+        <button
+          (click)="toggleFilterDropdown()"
+          class="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          [class.bg-[#0d5a4b]]="hasActiveFilters()"
+          [class.text-white]="hasActiveFilters()"
+          [class.border-[#0d5a4b]]="hasActiveFilters()"
+        >
+          <lucide-angular [img]="Filter" class="w-5 h-5" />
+          <span>Filters</span>
+          @if (hasActiveFilters()) {
+          <span class="ml-1 px-2 py-0.5 bg-white/20 rounded-full text-xs font-semibold">
+            {{ (selectedStatus !== null ? 1 : 0) + (selectedCityId ? 1 : 0) + (minPrice !== null ? 1 : 0) + (maxPrice !== null ? 1 : 0) }}
+          </span>
+          }
+        </button>
+
+        <!-- Filter Dropdown -->
+        @if (filterDropdownOpen()) {
+        <div
+          class="absolute right-0 mt-2 w-80 bg-white border border-gray-300 rounded-lg shadow-xl z-50 p-4"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="space-y-4">
+            <!-- Status Filter -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <select
+                [(ngModel)]="selectedStatus"
+                (ngModelChange)="onFilterChange()"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0d5a4b]"
+              >
+                <option [ngValue]="null">All Statuses</option>
+                <option [ngValue]="0">Pending Approval</option>
+                <option [ngValue]="1">Rejected</option>
+                <option [ngValue]="2">Available</option>
+                <option [ngValue]="3">Requested</option>
+                <option [ngValue]="4">Sold</option>
+              </select>
+            </div>
+
+            <!-- City Filter -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
+              @if (loadingCities()) {
+              <p class="text-sm text-gray-500">Loading cities...</p>
+              } @else {
+              <select
+                [(ngModel)]="selectedCityId"
+                (ngModelChange)="onFilterChange()"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0d5a4b]"
+              >
+                <option [ngValue]="null">All Cities</option>
+                @for (city of cities(); track city.id) {
+                <option [ngValue]="city.id">{{ city.nameEn }}</option>
+                }
+              </select>
+              }
+            </div>
+
+            <!-- Price Range -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <input
+                    type="number"
+                    [(ngModel)]="minPrice"
+                    (ngModelChange)="onFilterChange()"
+                    placeholder="Min Price"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0d5a4b]"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="number"
+                    [(ngModel)]="maxPrice"
+                    (ngModelChange)="onFilterChange()"
+                    placeholder="Max Price"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0d5a4b]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Clear Filters Button -->
+            @if (hasActiveFilters()) {
+            <button
+              (click)="clearFilters()"
+              class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+            >
+              <lucide-angular [img]="X" class="w-4 h-4" />
+              <span>Clear All Filters</span>
+            </button>
+            }
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Active Filters Display -->
+    @if (hasActiveFilters()) {
+    <div class="flex flex-wrap gap-2 items-center">
+      <span class="text-sm text-gray-600">Active filters:</span>
+      @if (selectedStatus !== null) {
+      <span class="px-3 py-1 bg-[#0d5a4b] text-white rounded-full text-sm flex items-center gap-2">
+        Status: {{ getStatusBadge(selectedStatus).text }}
+        <button (click)="selectedStatus = null; onFilterChange()" class="hover:text-gray-200">
+          <lucide-angular [img]="X" class="w-3 h-3" />
+        </button>
+      </span>
+      }
+      @if (selectedCityId) {
+      <span class="px-3 py-1 bg-[#0d5a4b] text-white rounded-full text-sm flex items-center gap-2">
+        City: {{ getCityName(selectedCityId) }}
+        <button (click)="selectedCityId = null; onFilterChange()" class="hover:text-gray-200">
+          <lucide-angular [img]="X" class="w-3 h-3" />
+        </button>
+      </span>
+      }
+      @if (minPrice !== null) {
+      <span class="px-3 py-1 bg-[#0d5a4b] text-white rounded-full text-sm flex items-center gap-2">
+        Min: {{ formatPrice(minPrice, 0) }}
+        <button (click)="minPrice = null; onFilterChange()" class="hover:text-gray-200">
+          <lucide-angular [img]="X" class="w-3 h-3" />
+        </button>
+      </span>
+      }
+      @if (maxPrice !== null) {
+      <span class="px-3 py-1 bg-[#0d5a4b] text-white rounded-full text-sm flex items-center gap-2">
+        Max: {{ formatPrice(maxPrice, 0) }}
+        <button (click)="maxPrice = null; onFilterChange()" class="hover:text-gray-200">
+          <lucide-angular [img]="X" class="w-3 h-3" />
+        </button>
+      </span>
+      }
+    </div>
+    }
   </div>
 
   @if (loading()) {
@@ -14,28 +171,55 @@
       <div
         class="col-span-1 flex flex-col gap-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200 overflow-hidden"
       >
-        <!-- Unit Image Placeholder -->
-        <div class="relative w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-          <lucide-angular [img]="Home" class="w-16 h-16 text-gray-400" />
+        <!-- Unit Image Slider -->
+        <div class="relative w-full h-96 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+          @if (getValidImages(unit).length > 0) {
+          <swiper-container
+            class="w-full h-full"
+            slides-per-view="1"
+            pagination="true"
+            loop="true"
+            autoplay-delay="3000"
+            autoplay-disable-on-interaction="false"
+          >
+            @for (image of getValidImages(unit); track image.id) {
+            <swiper-slide>
+              <img
+                [src]="getImageUrlFromPath(image.imagePath)"
+                [alt]="unit.titleEn || unit.titleAr || 'Estate Unit'"
+                class="w-full h-full object-cover"
+                onerror="this.src='/blog/3.jpg'"
+              />
+            </swiper-slide>
+            }
+          </swiper-container>
+          } @else {
+          <img
+            [src]="getImageUrl(unit)"
+            [alt]="unit.titleEn || unit.titleAr || 'Estate Unit'"
+            class="w-full h-full object-cover"
+            onerror="this.src='/blog/3.jpg'"
+          />
+          }
           <!-- Action Buttons -->
-          <div class="absolute top-2 right-2 flex gap-2">
+          <div class="absolute top-2 right-2 flex gap-2 z-10">
             <lucide-angular
               [img]="Eye"
-              class="text-blue-600 cursor-pointer bg-white rounded-md p-1.5 shadow-md hover:bg-blue-50 transition-colors"
+              class="text-blue-600 cursor-pointer bg-white/50 rounded-md p-1.5 hover:text-blue-500 transition-colors"
               size="24"
               (click)="viewDetails(unit)"
               title="View Details"
             ></lucide-angular>
             <lucide-angular
               [img]="Pencil"
-              class="text-black cursor-pointer bg-white rounded-md p-1.5 shadow-md hover:bg-gray-50 transition-colors"
+              class="text-black cursor-pointer bg-white/50 rounded-md p-1.5 hover:text-gray-500 transition-colors"
               size="24"
               (click)="editUnit(unit)"
               title="Edit"
             ></lucide-angular>
             <lucide-angular
               [img]="Trash2"
-              class="text-red-500 cursor-pointer bg-white rounded-md p-1.5 shadow-md hover:bg-red-50 transition-colors"
+              class="text-red-500 cursor-pointer bg-white/50 rounded-md p-1.5 hover:text-red-500 transition-colors"
               size="24"
               (click)="deleteUnit(unit)"
               title="Delete"
@@ -44,7 +228,7 @@
           <!-- Status Badge -->
           @if (unit.status !== undefined) {
           <div
-            class="absolute top-2 left-2 px-3 py-1 rounded-full text-xs font-semibold"
+            class="absolute top-2 left-2 px-3 py-1 rounded-full text-xs font-semibold z-10"
             [ngClass]="getStatusBadge(unit.status).class"
           >
             {{ getStatusBadge(unit.status).text }}
@@ -52,7 +236,7 @@
           }
           <!-- Approval Badge -->
           @if (unit.isApproved !== undefined) {
-          <div class="absolute bottom-2 right-2">
+          <div class="absolute bottom-2 right-2 z-10">
             @if (unit.isApproved) {
             <lucide-angular [img]="CheckCircle2" class="w-6 h-6 text-green-500 bg-white rounded-full" />
             } @else {
@@ -232,6 +416,38 @@
   >
     @if (selectedUnit) {
     <div class="flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
+      <!-- Unit Image Slider -->
+      <div class="w-full h-64 rounded-lg overflow-hidden mb-4">
+        @if (getValidImages(selectedUnit).length > 0) {
+        <swiper-container
+          class="w-full h-full"
+          slides-per-view="1"
+          navigation="true"
+          pagination="true"
+          loop="true"
+          autoplay-delay="3000"
+          autoplay-disable-on-interaction="false"
+        >
+          @for (image of getValidImages(selectedUnit); track image.id) {
+          <swiper-slide>
+            <img
+              [src]="getImageUrlFromPath(image.imagePath)"
+              [alt]="selectedUnit.titleEn || selectedUnit.titleAr || 'Estate Unit'"
+              class="w-full h-full object-cover"
+              onerror="this.src='/blog/3.jpg'"
+            />
+          </swiper-slide>
+          }
+        </swiper-container>
+        } @else {
+        <img
+          [src]="getImageUrl(selectedUnit)"
+          [alt]="selectedUnit.titleEn || selectedUnit.titleAr || 'Estate Unit'"
+          class="w-full h-full object-cover"
+          onerror="this.src='/blog/3.jpg'"
+        />
+        }
+      </div>
       <!-- Basic Information -->
       <div class="grid grid-cols-2 gap-4 pb-4 border-b border-gray-200">
         <div>

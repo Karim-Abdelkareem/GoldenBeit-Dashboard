@@ -1,13 +1,15 @@
-import { Component, ChangeDetectorRef, signal, HostListener } from '@angular/core';
+import { Component, ChangeDetectorRef, signal, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, X } from 'lucide-angular';
 import { StageInterface } from '../../../interfaces/stage.interface';
 import { StagesService } from '../../../services/stages.service';
 import { ProjectService } from '../../../services/project.service';
 import { CityService } from '../../../services/city.service';
 import { HotToastService } from '@ngxpert/hot-toast';
+import { environment } from '../../../environment/environment';
+import { processImageInput } from '../../../utils/image.utils';
 
 interface ProjectOption {
   id: string;
@@ -28,6 +30,8 @@ interface CityOption {
   styleUrl: './add-stages.css',
 })
 export class AddStages {
+  @ViewChild('fileInput', { static: false }) fileInput!: ElementRef<HTMLInputElement>;
+
   stageForm: FormGroup;
   isEdit = false;
   id: string | null = null;
@@ -36,7 +40,11 @@ export class AddStages {
   loadingProjects = signal<boolean>(true);
   loadingCities = signal<boolean>(true);
   cityDropdownOpen = false;
+  imagePreview = signal<string | null>(null);
+  imageUrl = environment.imageUrl;
+  originalImagePath: string | null = null; // Track original image path for edit mode
   protected readonly ArrowLeft = ArrowLeft;
+  protected readonly X = X;
 
   constructor(
     private fb: FormBuilder,
@@ -54,6 +62,11 @@ export class AddStages {
       year: ['', [Validators.required]],
       projectId: ['', [Validators.required]],
       cityIds: [[], [Validators.required, Validators.minLength(1)]],
+      image: this.fb.group({
+        name: [''],
+        extension: [''],
+        data: [''], // Will be required only for add mode, not for edit mode
+      }),
     });
   }
 
@@ -63,27 +76,61 @@ export class AddStages {
     this.route.params.subscribe((params) => {
       this.id = params['id'];
       this.isEdit = !!this.id;
+      
+      // For edit mode, image is optional (can keep current image)
+      // For add mode, image is required
+      if (!this.isEdit) {
+        this.stageForm.get('image.data')?.setValidators([Validators.required]);
+        this.stageForm.get('image.data')?.updateValueAndValidity();
+      }
+      
       if (this.isEdit) {
+        // Remove required validator for image.data in edit mode (image is optional)
+        this.stageForm.get('image.data')?.clearValidators();
+        this.stageForm.get('image.data')?.updateValueAndValidity();
+        
         this.stagesService.getStage(this.id!).subscribe(
           (response: any) => {
+            // Handle response.data if it exists (wrapped response)
+            const data = response.data || response;
+            
             // Extract cityIds from cities array if available, otherwise use cityIds directly
             let cityIds: string[] = [];
-            if (response.cities && Array.isArray(response.cities) && response.cities.length > 0) {
-              cityIds = response.cities.map((city: any) => city.cityId).filter((id: string) => !!id);
-            } else if (response.cityIds && Array.isArray(response.cityIds)) {
-              cityIds = response.cityIds;
+            if (data.cities && Array.isArray(data.cities) && data.cities.length > 0) {
+              cityIds = data.cities.map((city: any) => city.cityId).filter((id: string) => !!id);
+            } else if (data.cityIds && Array.isArray(data.cityIds)) {
+              cityIds = data.cityIds;
             }
 
             this.stageForm.patchValue({
-              nameAr: response.nameAr || '',
-              nameEn: response.nameEn || '',
-              year: response.year || '',
-              projectId: response.projectId || '',
+              nameAr: data.nameAr || '',
+              nameEn: data.nameEn || '',
+              year: data.year || '',
+              projectId: data.projectId || '',
               cityIds: cityIds,
             });
             // Mark cityIds as touched and dirty to ensure proper form state
             this.stageForm.get('cityIds')?.markAsTouched();
             this.stageForm.get('cityIds')?.markAsDirty();
+
+            // Handle image using image utils - convert imagePath to preview URL
+            if (data.imagePath) {
+              // Store original image path
+              this.originalImagePath = data.imagePath;
+              
+              // Use image URL from environment to build full preview URL
+              const fullImageUrl = data.imagePath.startsWith('http')
+                ? data.imagePath
+                : data.imagePath.startsWith('data:image/')
+                ? data.imagePath
+                : `${this.imageUrl}${data.imagePath}`;
+              this.imagePreview.set(fullImageUrl);
+              
+              // Note: We don't set the image form control here because imagePath
+              // is just a URL string, not the image data object needed for upload.
+              // If user wants to update the image, they need to select a new file.
+            }
+
             this.cdr.detectChanges();
           },
           (error: any) => {
@@ -150,7 +197,24 @@ export class AddStages {
 
   onSubmit(): void {
     if (this.stageForm.valid) {
-      const formData = this.stageForm.value as StageInterface;
+      const formValue = this.stageForm.value;
+      
+      // Prepare form data - include image only if it was changed (has data)
+      const formData: any = {
+        nameAr: formValue.nameAr,
+        nameEn: formValue.nameEn,
+        year: formValue.year,
+        projectId: formValue.projectId,
+        cityIds: formValue.cityIds,
+      };
+
+      // Include image only if it has data (new image selected or in add mode)
+      if (formValue.image && formValue.image.data) {
+        formData.image = formValue.image;
+      } else if (this.isEdit && this.originalImagePath && !formValue.image.data) {
+        // In edit mode, if no new image selected but original exists, don't send image
+        // The backend should keep the existing image
+      }
 
       if (this.isEdit && this.id) {
         this.stagesService.updateStage(this.id, { id: this.id, ...formData }).subscribe(
@@ -250,5 +314,78 @@ export class AddStages {
   clearAllCities(): void {
     this.stageForm.patchValue({ cityIds: [] });
     this.stageForm.get('cityIds')?.markAsTouched();
+  }
+
+  triggerFileInput(): void {
+    if (this.fileInput?.nativeElement) {
+      this.fileInput.nativeElement.value = '';
+      setTimeout(() => {
+        this.fileInput.nativeElement.click();
+      }, 0);
+    }
+  }
+
+  async onFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    await this.handleFileSelection(input);
+  }
+
+  private async handleFileSelection(input: HTMLInputElement): Promise<void> {
+    try {
+      const result = await processImageInput(input);
+      
+      if (result) {
+        // Clear original image path when new image is selected
+        this.originalImagePath = null;
+        
+        // Update preview
+        this.imagePreview.set(result.preview);
+
+        // Update form with image data (full data URI format)
+        this.stageForm.patchValue({
+          image: {
+            name: result.name,
+            extension: result.extension,
+            data: result.data, // Full data URI format: data:image/<type>,<data>
+          },
+        });
+
+        this.cdr.detectChanges();
+      } else {
+        // If no file selected, clear preview
+        this.imagePreview.set(null);
+        this.stageForm.patchValue({
+          image: {
+            name: '',
+            extension: '',
+            data: '',
+          },
+        });
+        this.cdr.detectChanges();
+      }
+    } catch (error) {
+      console.error('Error processing image:', error);
+      this.hotToastService.error('Failed to process image. Please try again.');
+    }
+  }
+
+  removeImage(): void {
+    this.imagePreview.set(null);
+    this.originalImagePath = null;
+    this.stageForm.patchValue({
+      image: {
+        name: '',
+        extension: '',
+        data: '',
+      },
+    });
+    
+    // Re-apply required validator if in add mode
+    if (!this.isEdit) {
+      this.stageForm.get('image.data')?.setValidators([Validators.required]);
+      this.stageForm.get('image.data')?.updateValueAndValidity();
+    }
+    
+    this.cdr.detectChanges();
   }
 }

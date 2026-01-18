@@ -9,6 +9,7 @@ import {
   HelpCircle,
   Eye,
   MessageSquare,
+  Tag,
 } from 'lucide-angular';
 import { FaQuestion as FaQuestionInterface } from '../../interfaces/fa-question';
 import { FaQuestionService } from '../../services/fa-question.service';
@@ -46,6 +47,7 @@ export class FaQuestion {
   protected readonly HelpCircle = HelpCircle;
   protected readonly Eye = Eye;
   protected readonly MessageSquare = MessageSquare;
+  protected readonly Tag = Tag;
 
   // Computed signal for visible page numbers
   visiblePages = computed(() => {

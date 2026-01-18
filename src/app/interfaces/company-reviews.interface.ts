@@ -1,5 +1,5 @@
 export interface CompanyReviewsInterface {
-  id?: string;
+  id: string;
   rate: number;
   review: string;
   userId: string;

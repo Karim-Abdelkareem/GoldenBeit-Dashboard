@@ -10,6 +10,7 @@ import {
   Calendar,
   Building2,
   MapPin,
+  Image as ImageIcon,
 } from 'lucide-angular';
 import { StageInterface } from '../../interfaces/stage.interface';
 import { StagesService } from '../../services/stages.service';
@@ -17,6 +18,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { DialogModule } from 'primeng/dialog';
 import { HotToastService } from '@ngxpert/hot-toast';
+import { environment } from '../../environment/environment';
 
 interface CityInfo {
   id: string;
@@ -65,6 +67,8 @@ export class Stages {
   protected readonly Calendar = Calendar;
   protected readonly Building2 = Building2;
   protected readonly MapPin = MapPin;
+  protected readonly ImageIcon = ImageIcon;
+  protected readonly imageUrl = environment.imageUrl;
 
   // Computed signal for visible page numbers
   visiblePages = computed(() => {
@@ -236,5 +240,21 @@ export class Stages {
 
   addStage(): void {
     this.router.navigate(['/stage/add']);
+  }
+
+  getImageUrl(imagePath?: string): string {
+    if (!imagePath) {
+      return '/blog/3.jpg'; // Default fallback image
+    }
+    // If imagePath is already a data URL (starts with "data:image/"), return as is
+    if (imagePath.startsWith('data:image/')) {
+      return imagePath;
+    }
+    // If imagePath already starts with http, return as is
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    // Otherwise, prepend the base URL
+    return `${this.imageUrl}${imagePath}`;
   }
 }

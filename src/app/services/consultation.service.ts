@@ -15,6 +15,24 @@ export class ConsultationService {
       {
         pageNumber: page,
         pageSize: pageSize,
+        orderBy: ['createdOn desc'],
+      },
+      {
+        headers: {
+          tenant: 'root',
+        },
+      }
+    );
+  }
+
+  getAllConsultations() {
+    // Fetch all consultations with a large page size
+    return this.http.post(
+      `${environment.apiUrl}/v1/consultation/search`,
+      {
+        pageNumber: 1,
+        pageSize: 1000, // Large number to get all consultations
+        orderBy: ['createdOn desc'],
       },
       {
         headers: {
@@ -50,6 +68,81 @@ export class ConsultationService {
 
   deleteConsultation(id: string) {
     return this.http.delete(`${environment.apiUrl}/v1/consultation/${id}`, {
+      headers: {
+        tenant: 'root',
+      },
+    });
+  }
+
+  getConsultationRequests(page: number = 1, pageSize: number = 10, filters?: any) {
+    const requestBody: any = {
+      pageNumber: page,
+      pageSize: pageSize,
+      orderBy: ['createdOn desc'],
+    };
+
+    // Add search - using advancedSearch for consultationNameEn and consultationNameAr
+    if (filters?.searchQuery && filters.searchQuery.trim()) {
+      requestBody.advancedSearch = {
+        fields: ['consultationNameEn', 'consultationNameAr'],
+        keyword: filters.searchQuery.trim(),
+      };
+    }
+
+    // Add filters
+    if (filters) {
+      if (filters.status) {
+        requestBody.status = filters.status;
+      }
+      if (filters.consultationId) {
+        requestBody.consultationId = filters.consultationId;
+      }
+      if (filters.userId) {
+        requestBody.userId = filters.userId;
+      }
+    }
+
+    return this.http.post(`${environment.apiUrl}/v1/consultationrequest/search`, requestBody, {
+      headers: {
+        tenant: 'root',
+      },
+    });
+  }
+
+  getConsultationRequest(id: string) {
+    return this.http.get(`${environment.apiUrl}/v1/consultationrequest/${id}`, {
+      headers: {
+        tenant: 'root',
+      },
+    });
+  }
+
+  updateConsultationRequestStatus(
+    id: string,
+    consultationId: string,
+    consultativeId: string | null | undefined,
+    status: string,
+    staffMsg?: string
+  ) {
+    return this.http.put(
+      `${environment.apiUrl}/v1/consultationrequest/${id}`,
+      {
+        id,
+        consultationId,
+        consultativeId: consultativeId || null,
+        status,
+        staffMsg: staffMsg || null,
+      },
+      {
+        headers: {
+          tenant: 'root',
+        },
+      }
+    );
+  }
+
+  deleteConsultationRequest(id: string) {
+    return this.http.delete(`${environment.apiUrl}/v1/consultationrequest/${id}`, {
       headers: {
         tenant: 'root',
       },

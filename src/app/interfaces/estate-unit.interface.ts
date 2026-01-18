@@ -10,6 +10,9 @@ export interface EstateUnit {
   forType?: number;
   finishing?: number;
   facade?: number;
+  rentType?: number;
+  furnishStatus?: number;
+  policy?: string;
   character?: string;
   status?: number;
   longitude?: number;
@@ -45,6 +48,13 @@ export interface EstateUnit {
   stageId?: string;
   stageNameAr?: string;
   stageNameEn?: string;
+  images?: UnitImage[];
   [key: string]: any;
+}
+
+export interface UnitImage {
+  id: string;
+  imagePath: string;
+  unitId: string;
 }
 

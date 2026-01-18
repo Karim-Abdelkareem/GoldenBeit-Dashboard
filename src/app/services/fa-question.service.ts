@@ -23,7 +23,7 @@ export class FaQuestionService {
     return this.http.post(`${environment.apiUrl}/v1/faquestion`, faQuestion);
   }
   updateFaQuestion(id: string, faQuestion: FaQuestionFormData) {
-    return this.http.put(`${environment.apiUrl}/v1/faquestion/${id}`, faQuestion);
+    return this.http.put(`${environment.apiUrl}/v1/faquestion/${id}`, {id, ...faQuestion});
   }
   deleteFaQuestion(id: string) {
     return this.http.delete(`${environment.apiUrl}/v1/faquestion/${id}`);

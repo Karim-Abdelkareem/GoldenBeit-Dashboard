@@ -1,4 +1,4 @@
-import { Component, signal, computed, ChangeDetectorRef } from '@angular/core';
+import { Component, signal, computed, ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA, HostListener } from '@angular/core';
 import {
   LucideAngularModule,
   ChevronRight,
@@ -14,19 +14,26 @@ import {
   Phone,
   CheckCircle2,
   XCircle,
+  Search,
+  Filter,
+  X,
 } from 'lucide-angular';
 import { EstateunitService } from '../../services/estateunit.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { DialogModule } from 'primeng/dialog';
 import { HotToastService } from '@ngxpert/hot-toast';
-import { EstateUnit as EstateUnitInterface } from '../../interfaces/estate-unit.interface';
+import { EstateUnit as EstateUnitInterface, UnitImage } from '../../interfaces/estate-unit.interface';
+import { environment } from '../../environment/environment';
+import { FormsModule } from '@angular/forms';
+import { CityService } from '../../services/city.service';
 
 @Component({
   selector: 'app-estate-unit',
-  imports: [LucideAngularModule, CommonModule, DialogModule],
+  imports: [LucideAngularModule, CommonModule, DialogModule, FormsModule],
   templateUrl: './estate-unit.html',
   styleUrl: './estate-unit.css',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class EstateUnit {
   estateUnits = signal<EstateUnitInterface[]>([]);
@@ -56,6 +63,20 @@ export class EstateUnit {
   protected readonly Phone = Phone;
   protected readonly CheckCircle2 = CheckCircle2;
   protected readonly XCircle = XCircle;
+  protected readonly Search = Search;
+  protected readonly Filter = Filter;
+  protected readonly X = X;
+  url = environment.imageUrl;
+
+  // Search and Filter (using regular properties for ngModel binding)
+  searchQuery = signal<string>('');
+  selectedStatus: number | null = null;
+  selectedCityId: string | null = null;
+  minPrice: number | null = null;
+  maxPrice: number | null = null;
+  filterDropdownOpen = signal<boolean>(false);
+  cities = signal<Array<{ id: string; nameEn: string; nameAr: string }>>([]);
+  loadingCities = signal<boolean>(false);
 
   // Computed signal for visible page numbers
   visiblePages = computed(() => {
@@ -77,19 +98,51 @@ export class EstateUnit {
     private estateUnitService: EstateunitService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private hotToastService: HotToastService
+    private hotToastService: HotToastService,
+    private cityService: CityService
   ) {}
 
   ngOnInit(): void {
+    this.loadCities();
     this.loadEstateUnits();
   }
 
   loadEstateUnits(): void {
     this.loading.set(true);
     const currentPage = this.page();
-    this.estateUnitService.getEstateUnits(currentPage, this.itemsPerPage()).subscribe(
+    const searchParams: any = {
+      pageNumber: currentPage,
+      pageSize: this.itemsPerPage(),
+      orderBy: ['createdOn desc'],
+    };
+
+    // Add search query (will be converted to advancedSearch in service)
+    if (this.searchQuery().trim()) {
+      searchParams.searchQuery = this.searchQuery().trim();
+    }
+
+    // Add filters
+    if (this.selectedStatus !== null && this.selectedStatus !== undefined) {
+      searchParams.status = Number(this.selectedStatus); // 0, 1, 2, 3, 4
+    }
+
+    if (this.selectedCityId) {
+      searchParams.cityId = this.selectedCityId;
+    }
+
+    if (this.minPrice !== null && this.minPrice !== undefined) {
+      searchParams.minPrice = Number(this.minPrice);
+    }
+
+    if (this.maxPrice !== null && this.maxPrice !== undefined) {
+      searchParams.maxPrice = Number(this.maxPrice);
+    }
+
+    this.estateUnitService.getEstateUnits(currentPage, this.itemsPerPage(), searchParams).subscribe(
       (response: any) => {
         this.estateUnits.set(response.data || []);
+        console.log(this.estateUnits());
+        
         this.totalPages.set(response.totalPages || 1);
         this.totalItems.set(response.totalCount || 0);
         this.page.set(currentPage);
@@ -112,11 +165,82 @@ export class EstateUnit {
     );
   }
 
+  loadCities(): void {
+    this.loadingCities.set(true);
+    this.cityService.getCities(1, 1000).subscribe(
+      (response: any) => {
+        const citiesList = response.data || [];
+        this.cities.set(
+          citiesList.map((city: any) => ({
+            id: city.id,
+            nameEn: city.nameEn || city.nameAr || 'Untitled City',
+            nameAr: city.nameAr || city.nameEn || 'مدينة بدون عنوان',
+          }))
+        );
+        this.loadingCities.set(false);
+        this.cdr.detectChanges();
+      },
+      (error: any) => {
+        console.error('Error loading cities:', error);
+        this.loadingCities.set(false);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  onSearch(): void {
+    this.page.set(1);
+    this.loadEstateUnits();
+  }
+
+  onFilterChange(): void {
+    this.page.set(1);
+    this.loadEstateUnits();
+  }
+
+  clearFilters(): void {
+    this.searchQuery.set('');
+    this.selectedStatus = null;
+    this.selectedCityId = null;
+    this.minPrice = null;
+    this.maxPrice = null;
+    this.page.set(1);
+    this.loadEstateUnits();
+  }
+
+  toggleFilterDropdown(): void {
+    this.filterDropdownOpen.set(!this.filterDropdownOpen());
+  }
+
+  hasActiveFilters(): boolean {
+    return (
+      this.searchQuery().trim() !== '' ||
+      this.selectedStatus !== null ||
+      this.selectedCityId !== null ||
+      this.minPrice !== null ||
+      this.maxPrice !== null
+    );
+  }
+
+  getCityName(cityId: string | null): string {
+    if (!cityId) return '';
+    const city = this.cities().find((c) => c.id === cityId);
+    return city?.nameEn || '';
+  }
+
   goToPage(pageNumber: number): void {
     if (pageNumber >= 1 && pageNumber <= this.totalPages()) {
       this.page.set(pageNumber);
       this.loadEstateUnits();
       this.scrollToTop();
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.filter-dropdown-container')) {
+      this.filterDropdownOpen.set(false);
     }
   }
 
@@ -141,8 +265,7 @@ export class EstateUnit {
   }
 
   viewDetails(unit: EstateUnitInterface): void {
-    this.selectedUnit = unit;
-    this.detailsDialogVisible = true;
+    this.router.navigate(['/estate-units/details/', unit.id]);
   }
 
   closeDetailsDialog(): void {
@@ -205,18 +328,52 @@ export class EstateUnit {
   }
 
   getStatusBadge(status?: number): { text: string; class: string } {
-    // Assuming status enum values
+    // Status enum: 0=PendingApproval, 1=Rejected, 2=Available, 3=Requested, 4=Sold
     const statuses: { [key: number]: { text: string; class: string } } = {
-      0: { text: 'Available', class: 'bg-green-100 text-green-800' },
-      1: { text: 'Sold', class: 'bg-red-100 text-red-800' },
-      2: { text: 'Reserved', class: 'bg-yellow-100 text-yellow-800' },
-      3: { text: 'Pending', class: 'bg-gray-100 text-gray-800' },
+      0: { text: 'Pending Approval', class: 'bg-yellow-100 text-yellow-800' },
+      1: { text: 'Rejected', class: 'bg-red-100 text-red-800' },
+      2: { text: 'Available', class: 'bg-green-100 text-green-800' },
+      3: { text: 'Requested', class: 'bg-blue-100 text-blue-800' },
+      4: { text: 'Sold', class: 'bg-gray-100 text-gray-800' },
     };
-    return statuses[status ?? 0] || { text: 'Unknown', class: 'bg-gray-100 text-gray-800' };
+    return statuses[status ?? 2] || { text: 'Unknown', class: 'bg-gray-100 text-gray-800' };
   }
 
   formatArea(area?: number): string {
     if (area === undefined || area === null) return 'N/A';
     return `${new Intl.NumberFormat('en-US').format(area)} m²`;
+  }
+
+  getImageUrl(unit: EstateUnitInterface): string {
+    // First check if there are images in the array
+    const images = this.getValidImages(unit);
+    if (images.length > 0 && images[0].imagePath) {
+      return this.getImageUrlFromPath(images[0].imagePath);
+    }
+    // Fallback to single imagePath property
+    const imagePath = (unit as any).imagePath;
+    if (!imagePath) {
+      return '/blog/3.jpg'; // Default fallback image
+    }
+    return this.getImageUrlFromPath(imagePath);
+  }
+
+  getValidImages(unit: EstateUnitInterface): UnitImage[] {
+    if (!unit.images || !Array.isArray(unit.images)) {
+      return [];
+    }
+    return unit.images.filter((img) => img.imagePath && img.imagePath.trim() !== '');
+  }
+
+  getImageUrlFromPath(imagePath: string): string {
+    if (!imagePath) {
+      return '/blog/3.jpg'; // Default fallback image
+    }
+    // If imagePath already starts with http, return as is
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    // Otherwise, prepend the base URL
+    return `${this.url}${imagePath}`;
   }
 }

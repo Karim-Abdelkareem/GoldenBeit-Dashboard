@@ -1,0 +1,777 @@
+<div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-4">
+        <button
+          (click)="goBack()"
+          class="p-2 rounded-lg hover:bg-gray-200 transition-colors"
+        >
+          <lucide-angular [img]="ArrowLeft" class="w-6 h-6 text-gray-600" />
+        </button>
+        <div>
+          <h1 class="text-3xl font-bold text-[#0d5a4b]">Edit Estate Unit</h1>
+          <p class="text-gray-500 mt-1">Update estate unit information</p>
+        </div>
+      </div>
+    </div>
+
+    @if (loading()) {
+    <!-- Loading State -->
+    <div class="flex justify-center items-center py-16">
+      <div class="flex flex-col items-center gap-4">
+        <div class="w-12 h-12 border-4 border-[#0d5a4b] border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-gray-500 text-lg">Loading estate unit data...</p>
+      </div>
+    </div>
+    } @else {
+    <!-- Form -->
+    <form [formGroup]="estateUnitForm" (ngSubmit)="onSubmit()">
+      <!-- Basic Information Section -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center gap-3">
+          <lucide-angular [img]="Home" class="w-5 h-5 text-[#0d5a4b]" />
+          <h2 class="text-lg font-semibold text-gray-800">Basic Information</h2>
+        </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Unit Number -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Unit Number</label>
+            <input
+              type="text"
+              formControlName="unitNumber"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="Enter unit number"
+            />
+          </div>
+
+          <!-- Building Number -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Building Number</label>
+            <input
+              type="text"
+              formControlName="buildingNumber"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="Enter building number"
+            />
+          </div>
+
+          <!-- Area -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Area (m²)</label>
+            <input
+              type="number"
+              formControlName="area"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="0"
+            />
+          </div>
+
+          <!-- View -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">View</label>
+            <input
+              type="text"
+              formControlName="view"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="e.g., Sea View, Garden View"
+            />
+          </div>
+
+          <!-- Model -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Model</label>
+            <input
+              type="text"
+              formControlName="model"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="Enter model"
+            />
+          </div>
+
+          <!-- Character -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Character</label>
+            <input
+              type="text"
+              formControlName="character"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="Enter character"
+            />
+          </div>
+
+          <!-- Phone Number -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+            <input
+              type="text"
+              formControlName="phoneNumber"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="Enter phone number"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Description Section -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center gap-3">
+          <lucide-angular [img]="FileText" class="w-5 h-5 text-[#0d5a4b]" />
+          <h2 class="text-lg font-semibold text-gray-800">Description</h2>
+        </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Description English -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Description (English)</label>
+            <textarea
+              formControlName="descriptionEn"
+              rows="4"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent resize-none"
+              placeholder="Enter description in English"
+            ></textarea>
+          </div>
+
+          <!-- Description Arabic -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Description (Arabic)</label>
+            <textarea
+              formControlName="descriptionAr"
+              rows="4"
+              dir="rtl"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent resize-none"
+              placeholder="أدخل الوصف بالعربية"
+            ></textarea>
+          </div>
+
+          <!-- Policy -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Policy</label>
+            <textarea
+              formControlName="policy"
+              rows="3"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent resize-none"
+              placeholder="Enter policy details"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Location Section -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center gap-3">
+          <lucide-angular [img]="MapPin" class="w-5 h-5 text-[#0d5a4b]" />
+          <h2 class="text-lg font-semibold text-gray-800">Location</h2>
+        </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- City -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
+            @if (loadingCities()) {
+            <p class="text-sm text-gray-500 py-2">Loading cities...</p>
+            } @else {
+            <select
+              formControlName="cityId"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+            >
+              <option value="">Select City</option>
+              @for (city of cities(); track city.id) {
+              <option [value]="city.id">{{ city.nameEn }}</option>
+              }
+            </select>
+            }
+          </div>
+
+          <!-- Stage -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Stage</label>
+            @if (loadingStages()) {
+            <p class="text-sm text-gray-500 py-2">Loading stages...</p>
+            } @else {
+            <select
+              formControlName="stageId"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+            >
+              <option value="">Select Stage</option>
+              @for (stage of stages(); track stage.id) {
+              <option [value]="stage.id">{{ stage.nameEn }}</option>
+              }
+            </select>
+            }
+          </div>
+
+          <!-- Unit Type -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Unit Type</label>
+            @if (loadingUnitTypes()) {
+            <p class="text-sm text-gray-500 py-2">Loading unit types...</p>
+            } @else {
+            <select
+              formControlName="unitTypeId"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+            >
+              <option value="">Select Unit Type</option>
+              @for (unitType of unitTypes(); track unitType.id) {
+              <option [value]="unitType.id">{{ unitType.nameEn }}</option>
+              }
+            </select>
+            }
+          </div>
+
+          <!-- Main Address -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Main Address</label>
+            <input
+              type="text"
+              formControlName="mainAddress"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="Enter main address"
+            />
+          </div>
+
+          <!-- Location -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Location Details</label>
+            <input
+              type="text"
+              formControlName="location"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="Enter location details"
+            />
+          </div>
+
+          <!-- Longitude -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Longitude</label>
+            <input
+              type="number"
+              step="any"
+              formControlName="longitude"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="0.0"
+            />
+          </div>
+
+          <!-- Latitude -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Latitude</label>
+            <input
+              type="number"
+              step="any"
+              formControlName="latitude"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="0.0"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Property Details Section -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center gap-3">
+          <lucide-angular [img]="Building2" class="w-5 h-5 text-[#0d5a4b]" />
+          <h2 class="text-lg font-semibold text-gray-800">Property Details</h2>
+        </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Room Count -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Room Count</label>
+            <input
+              type="number"
+              formControlName="roomCount"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="0"
+            />
+          </div>
+
+          <!-- Bath Count -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Bath Count</label>
+            <input
+              type="number"
+              formControlName="bathCount"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="0"
+            />
+          </div>
+
+          <!-- Kitchen Count -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Kitchen Count</label>
+            <input
+              type="number"
+              formControlName="kitchenCount"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="0"
+            />
+          </div>
+
+          <!-- For Type -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">For Type</label>
+            <select
+              formControlName="forType"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+            >
+              @for (option of forTypeOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Finishing -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Finishing</label>
+            <select
+              formControlName="finishing"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+            >
+              @for (option of finishingOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Facade -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Facade</label>
+            <select
+              formControlName="facade"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+            >
+              @for (option of facadeOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Ownership Status -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Ownership Status</label>
+            <select
+              formControlName="ownerShipStatus"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+            >
+              @for (option of ownershipStatusOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Rent Type -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Rent Type</label>
+            <select
+              formControlName="rentType"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+            >
+              @for (option of rentTypeOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Furnish Status -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Furnish Status</label>
+            <select
+              formControlName="furnishStatus"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+            >
+              @for (option of furnishStatusOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing & Payment Section -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center gap-3">
+          <lucide-angular [img]="DollarSign" class="w-5 h-5 text-[#0d5a4b]" />
+          <h2 class="text-lg font-semibold text-gray-800">Pricing & Payment</h2>
+        </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Payment Method -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+            <select
+              formControlName="paymentMethod"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+            >
+              @for (option of paymentMethodOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Installment Method -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Installment Method</label>
+            <input
+              type="text"
+              formControlName="installmentMethod"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="Enter installment method"
+            />
+          </div>
+
+          <!-- Installment Period -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Installment Period</label>
+            <input
+              type="text"
+              formControlName="installmentPeriod"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="e.g., 12 months"
+            />
+          </div>
+
+          <!-- Installment Amount & Currency -->
+          <div class="flex gap-2">
+            <div class="flex-1">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Installment Amount</label>
+              <input
+                type="number"
+                formControlName="installmentAmount"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+                placeholder="0"
+              />
+            </div>
+            <div class="w-24">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+              <select
+                formControlName="installmentAmountCurrency"
+                class="w-full px-2 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              >
+                @for (option of currencyOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <!-- Maintenance Fee -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Maintenance Fee</label>
+            <input
+              type="number"
+              formControlName="maintenanceFee"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="0"
+            />
+          </div>
+
+          <!-- Paid Amount & Currency -->
+          <div class="flex gap-2">
+            <div class="flex-1">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Paid Amount</label>
+              <input
+                type="number"
+                formControlName="paidAmount"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+                placeholder="0"
+              />
+            </div>
+            <div class="w-24">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+              <select
+                formControlName="paidAmountCurrency"
+                class="w-full px-2 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              >
+                @for (option of currencyOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <!-- Remaining Amount & Currency -->
+          <div class="flex gap-2">
+            <div class="flex-1">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Remaining Amount</label>
+              <input
+                type="number"
+                formControlName="remainingAmount"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+                placeholder="0"
+              />
+            </div>
+            <div class="w-24">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+              <select
+                formControlName="remainingAmountCurrency"
+                class="w-full px-2 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              >
+                @for (option of currencyOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <!-- Meter Price & Currency -->
+          <div class="flex gap-2">
+            <div class="flex-1">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Meter Price</label>
+              <input
+                type="number"
+                formControlName="meterPrice"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+                placeholder="0"
+              />
+            </div>
+            <div class="w-24">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+              <select
+                formControlName="meterPriceCurrency"
+                class="w-full px-2 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              >
+                @for (option of currencyOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <!-- Over Price & Currency -->
+          <div class="flex gap-2">
+            <div class="flex-1">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Over Price</label>
+              <input
+                type="number"
+                formControlName="overPrice"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+                placeholder="0"
+              />
+            </div>
+            <div class="w-24">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+              <select
+                formControlName="overPriceCurrency"
+                class="w-full px-2 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              >
+                @for (option of currencyOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <!-- Total Price & Currency -->
+          <div class="flex gap-2">
+            <div class="flex-1">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Total Price</label>
+              <input
+                type="number"
+                formControlName="totalPrice"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+                placeholder="0"
+              />
+            </div>
+            <div class="w-24">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+              <select
+                formControlName="totalPriceCurrency"
+                class="w-full px-2 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              >
+                @for (option of currencyOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status & Approval Section -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center gap-3">
+          <lucide-angular [img]="CheckCircle2" class="w-5 h-5 text-[#0d5a4b]" />
+          <h2 class="text-lg font-semibold text-gray-800">Status & Approval</h2>
+        </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Status -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <select
+              formControlName="status"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+            >
+              @for (option of statusOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- View Count -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">View Count</label>
+            <input
+              type="number"
+              formControlName="viewCount"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="0"
+            />
+          </div>
+
+          <!-- Approver Message -->
+          <div class="md:col-span-2 lg:col-span-1">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Approver Message</label>
+            <input
+              type="text"
+              formControlName="approverMessage"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+              placeholder="Enter approver message"
+            />
+          </div>
+
+          <!-- Checkboxes -->
+          <div class="md:col-span-2 lg:col-span-3 flex flex-wrap gap-6">
+            <!-- Is Approved -->
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                formControlName="isApproved"
+                class="w-5 h-5 text-[#0d5a4b] border-gray-300 rounded focus:ring-[#0d5a4b]"
+              />
+              <span class="text-sm font-medium text-gray-700">Is Approved</span>
+            </label>
+
+            <!-- Is Viewable -->
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                formControlName="isViewable"
+                class="w-5 h-5 text-[#0d5a4b] border-gray-300 rounded focus:ring-[#0d5a4b]"
+              />
+              <span class="text-sm font-medium text-gray-700">Is Viewable</span>
+            </label>
+
+            <!-- Is Delivery Ready -->
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                formControlName="isDeliveryReady"
+                class="w-5 h-5 text-[#0d5a4b] border-gray-300 rounded focus:ring-[#0d5a4b]"
+              />
+              <span class="text-sm font-medium text-gray-700">Is Delivery Ready</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Images Section -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <lucide-angular [img]="Image" class="w-5 h-5 text-[#0d5a4b]" />
+            <h2 class="text-lg font-semibold text-gray-800">Images</h2>
+          </div>
+          <button
+            type="button"
+            (click)="addImageInput()"
+            class="px-4 py-2 bg-[#0d5a4b] text-white rounded-lg hover:bg-[#0f7a65] transition-colors flex items-center gap-2 text-sm"
+          >
+            <lucide-angular [img]="Plus" class="w-4 h-4" />
+            Add Image
+          </button>
+        </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Display all images -->
+          @for (image of images(); track image.index) {
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              @if (image.index === 0) {
+              Main Image
+              } @else if (image.index === 1) {
+              Second Image
+              } @else {
+              Image {{ image.index + 1 }}
+              }
+            </label>
+            <input
+              [id]="'image-input-' + image.index"
+              type="file"
+              accept="image/*"
+              (change)="onImageSelected($event, image.index)"
+              class="hidden"
+            />
+            <div class="relative rounded-lg overflow-hidden border border-gray-200">
+              <img [src]="image.preview" [alt]="'Image ' + (image.index + 1)" class="w-full h-48 object-cover" />
+              <button
+                type="button"
+                (click)="removeImage(image.index)"
+                class="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+              >
+                <lucide-angular [img]="X" class="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                (click)="triggerImageInput(image.index)"
+                class="absolute top-2 left-2 p-1 bg-[#0d5a4b] text-white rounded-full hover:bg-[#0f7a65] transition-colors"
+                title="Change Image"
+              >
+                <lucide-angular [img]="Upload" class="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          }
+
+          <!-- Add new image placeholder -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              @if (images().length === 0) {
+              Main Image
+              } @else if (images().length === 1) {
+              Second Image
+              } @else {
+              Image {{ images().length + 1 }}
+              }
+            </label>
+            <input
+              [id]="'image-input-' + images().length"
+              type="file"
+              accept="image/*"
+              (change)="onImageSelected($event, images().length)"
+              class="hidden"
+            />
+            <div
+              (click)="triggerImageInput(images().length)"
+              class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-[#0d5a4b] transition-colors h-48 flex flex-col items-center justify-center"
+            >
+              <lucide-angular [img]="Upload" class="w-10 h-10 text-gray-400 mb-3" />
+              <p class="text-gray-600 text-sm">Click to upload image</p>
+              <p class="text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 10MB</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex justify-end gap-4 mt-8">
+        <button
+          type="button"
+          (click)="goBack()"
+          class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          [disabled]="saving()"
+          class="px-6 py-3 bg-[#0d5a4b] text-white rounded-lg hover:bg-[#0f7a65] transition-colors font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          @if (saving()) {
+          <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          Saving...
+          } @else {
+          <lucide-angular [img]="Save" class="w-5 h-5" />
+          Save Changes
+          }
+        </button>
+      </div>
+    </form>
+    }
+  </div>
+</div>

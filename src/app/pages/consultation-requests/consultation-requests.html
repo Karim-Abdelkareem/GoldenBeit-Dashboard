@@ -1,0 +1,495 @@
+<div class="my-6 p-4">
+  <!-- Header -->
+  <div class="flex justify-between items-center border-b border-gray-300 pb-4 mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-[#0d5a4b]">Consultation Requests</h1>
+      <p class="text-gray-500 mt-1">Manage and respond to consultation requests from users</p>
+    </div>
+    <div class="flex items-center gap-2 text-sm text-gray-600">
+      <lucide-angular [img]="Briefcase" class="w-5 h-5" />
+      <span>Total: {{ totalItems() }} requests</span>
+    </div>
+  </div>
+
+  <!-- Search and Filter Section -->
+  <div class="mb-6 space-y-4">
+    <!-- Search Bar -->
+    <div class="flex gap-4 items-center">
+      <div class="flex-1 relative">
+        <lucide-angular [img]="Search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearch()"
+          placeholder="Search by consultation name (English or Arabic)..."
+          class="w-full pl-16 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+        />
+      </div>
+
+      <!-- Filter Button -->
+      <div class="relative filter-dropdown-container">
+        <button
+          (click)="toggleFilterDropdown()"
+          class="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          [class.bg-[#0d5a4b]]="hasActiveFilters()"
+          [class.text-white]="hasActiveFilters()"
+          [class.border-[#0d5a4b]]="hasActiveFilters()"
+        >
+          <lucide-angular [img]="Filter" class="w-5 h-5" />
+          <span>Filters</span>
+          @if (hasActiveFilters()) {
+          <span class="ml-1 px-2 py-0.5 bg-white/20 rounded-full text-xs font-semibold">
+            {{ (selectedStatus !== null ? 1 : 0) + (selectedConsultationId !== null ? 1 : 0) }}
+          </span>
+          }
+        </button>
+
+        <!-- Filter Dropdown -->
+        @if (filterDropdownOpen()) {
+        <div
+          class="absolute right-0 mt-2 w-80 bg-white border border-gray-300 rounded-lg shadow-xl z-50 p-4"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="space-y-4">
+            <!-- Status Filter -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <select
+                [(ngModel)]="selectedStatus"
+                (ngModelChange)="onFilterChange()"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0d5a4b]"
+              >
+                <option [ngValue]="null">All Statuses</option>
+                <option [ngValue]="'Pending'">Pending</option>
+                <option [ngValue]="'InProgress'">In Progress</option>
+                <option [ngValue]="'Completed'">Completed</option>
+                <option [ngValue]="'Rejected'">Rejected</option>
+              </select>
+            </div>
+
+            <!-- Consultation Filter -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Consultation Type</label>
+              @if (loadingConsultations()) {
+              <p class="text-sm text-gray-500">Loading consultations...</p>
+              } @else {
+              <select
+                [(ngModel)]="selectedConsultationId"
+                (ngModelChange)="onFilterChange()"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0d5a4b]"
+              >
+                <option [ngValue]="null">All Consultations</option>
+                @for (consultation of consultations(); track consultation.id) {
+                <option [ngValue]="consultation.id">
+                  {{ consultation.nameEn }}
+                  @if (consultation.nameAr) {
+                  <span dir="rtl"> ({{ consultation.nameAr }})</span>
+                  }
+                </option>
+                }
+              </select>
+              }
+            </div>
+
+            <!-- Clear Filters Button -->
+            @if (hasActiveFilters()) {
+            <button
+              (click)="clearFilters()"
+              class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+            >
+              <lucide-angular [img]="X" class="w-4 h-4" />
+              <span>Clear All Filters</span>
+            </button>
+            }
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Active Filters Display -->
+    @if (hasActiveFilters()) {
+    <div class="flex flex-wrap gap-2 items-center">
+      <span class="text-sm text-gray-600">Active filters:</span>
+      @if (selectedStatus !== null) {
+      <span class="px-3 py-1 bg-[#0d5a4b] text-white rounded-full text-sm flex items-center gap-2">
+        Status: {{ getStatusInfo(selectedStatus).text }}
+        <button (click)="selectedStatus = null; onFilterChange()" class="hover:text-gray-200">
+          <lucide-angular [img]="X" class="w-3 h-3" />
+        </button>
+      </span>
+      }
+      @if (selectedConsultationId !== null) {
+      <span class="px-3 py-1 bg-[#0d5a4b] text-white rounded-full text-sm flex items-center gap-2">
+        Consultation: {{ getConsultationName(selectedConsultationId) }}
+        <button (click)="selectedConsultationId = null; onFilterChange()" class="hover:text-gray-200">
+          <lucide-angular [img]="X" class="w-3 h-3" />
+        </button>
+      </span>
+      }
+      @if (searchQuery().trim() !== '') {
+      <span class="px-3 py-1 bg-[#0d5a4b] text-white rounded-full text-sm flex items-center gap-2">
+        Search: "{{ searchQuery() }}"
+        <button (click)="searchQuery.set(''); onSearch()" class="hover:text-gray-200">
+          <lucide-angular [img]="X" class="w-3 h-3" />
+        </button>
+      </span>
+      }
+    </div>
+    }
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+  <div class="flex justify-center items-center py-16">
+    <div class="flex flex-col items-center gap-4">
+      <div class="w-12 h-12 border-4 border-[#0d5a4b] border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-gray-500 text-lg">Loading consultation requests...</p>
+    </div>
+  </div>
+  } @else if (requests().length === 0) {
+  <!-- Empty State -->
+  <div class="flex flex-col items-center justify-center py-16 bg-gray-50 rounded-xl">
+    <lucide-angular [img]="MessageSquare" class="w-16 h-16 text-gray-300 mb-4" />
+    <h3 class="text-xl font-semibold text-gray-600 mb-2">No Consultation Requests</h3>
+    <p class="text-gray-400">There are no consultation requests at the moment.</p>
+  </div>
+  } @else {
+  <!-- Requests Cards Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    @for (request of requests(); track request.id) {
+    <div
+      class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 group"
+    >
+      <!-- Card Header with Consultation Type -->
+      <div class="bg-gradient-to-r from-[#0d5a4b] to-[#0f7a65] p-4">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <h3 class="text-white font-semibold text-lg truncate">{{ request.consultationNameEn }}</h3>
+            <p class="text-white/80 text-sm mt-1 truncate" dir="rtl">{{ request.consultationNameAr }}</p>
+          </div>
+          <div
+            class="px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1"
+            [ngClass]="getStatusInfo(request.status).class"
+          >
+            <lucide-angular [img]="getStatusInfo(request.status).icon" class="w-3 h-3" />
+            {{ getStatusInfo(request.status).text }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Body -->
+      <div class="p-4 space-y-3">
+        <!-- User ID -->
+        <div class="flex items-center gap-3 text-gray-600">
+          <lucide-angular [img]="User" class="w-4 h-4 text-[#0d5a4b]" />
+          <span class="text-sm truncate">User: {{ request.userId.substring(0, 8) }}...</span>
+        </div>
+
+        <!-- Date -->
+        <div class="flex items-center gap-3 text-gray-600">
+          <lucide-angular [img]="Calendar" class="w-4 h-4 text-[#0d5a4b]" />
+          <span class="text-sm">{{ formatDate(request.createdOn) }}</span>
+        </div>
+
+        <!-- Staff Message Preview -->
+        @if (request.staffMsg) {
+        <div class="flex items-start gap-3 text-gray-600">
+          <lucide-angular [img]="MessageSquare" class="w-4 h-4 text-[#0d5a4b] mt-0.5" />
+          <span class="text-sm line-clamp-2">{{ request.staffMsg }}</span>
+        </div>
+        }
+      </div>
+
+      <!-- Card Footer -->
+      <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex justify-between items-center gap-2">
+        <button
+          (click)="viewRequest(request)"
+          class="flex items-center gap-2 px-3 py-1.5 text-sm text-[#0d5a4b] hover:bg-[#0d5a4b]/10 rounded-lg transition-colors"
+        >
+          <lucide-angular [img]="Eye" class="w-4 h-4" />
+          View Details
+        </button>
+        <div class="flex gap-2">
+          <button
+            (click)="openUpdateStatusDialog(request)"
+            class="flex items-center gap-2 px-3 py-1.5 text-sm bg-[#0d5a4b] text-white hover:bg-[#0f7a65] rounded-lg transition-colors"
+          >
+            <lucide-angular [img]="Send" class="w-4 h-4" />
+            Update Status
+          </button>
+          <button
+            (click)="confirmDelete(request)"
+            class="flex items-center gap-2 px-3 py-1.5 text-sm bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors"
+          >
+            <lucide-angular [img]="Trash2" class="w-4 h-4" />
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+
+  <!-- Pagination -->
+  @if (totalPages() > 1) {
+  <div class="flex justify-center items-center gap-2 mt-8">
+    <button
+      (click)="previousPage()"
+      [disabled]="!hasPreviousPage()"
+      class="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      <lucide-angular [img]="ChevronLeft" class="w-5 h-5" />
+    </button>
+
+    @for (pageNum of getVisiblePages(); track pageNum) {
+    <button
+      (click)="goToPage(pageNum)"
+      class="px-4 py-2 rounded-lg border transition-colors"
+      [ngClass]="{
+        'bg-[#0d5a4b] text-white border-[#0d5a4b]': pageNum === page(),
+        'border-gray-300 hover:bg-gray-100': pageNum !== page()
+      }"
+    >
+      {{ pageNum }}
+    </button>
+    }
+
+    <button
+      (click)="nextPage()"
+      [disabled]="!hasNextPage()"
+      class="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      <lucide-angular [img]="ChevronRight" class="w-5 h-5" />
+    </button>
+  </div>
+  }
+  }
+</div>
+
+<!-- Details Dialog -->
+<p-dialog
+  [(visible)]="detailsDialogVisible"
+  [modal]="true"
+  [style]="{ width: '600px', maxWidth: '95vw' }"
+  header="Request Details"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeDetailsDialog()"
+>
+  @if (selectedRequest) {
+  <div class="flex flex-col gap-4">
+    <!-- Consultation Type -->
+    <div class="bg-gradient-to-r from-[#0d5a4b] to-[#0f7a65] rounded-lg p-4 text-white">
+      <div class="flex items-center gap-2 mb-2">
+        <lucide-angular [img]="Briefcase" class="w-5 h-5" />
+        <span class="text-sm opacity-80">Consultation Type</span>
+      </div>
+      <h3 class="text-xl font-semibold">{{ selectedRequest.consultationNameEn }}</h3>
+      <p class="text-white/80 mt-1" dir="rtl">{{ selectedRequest.consultationNameAr }}</p>
+    </div>
+
+    <!-- Status -->
+    <div class="flex items-center justify-between pb-3 border-b border-gray-200">
+      <div class="flex items-center gap-3">
+        <lucide-angular [img]="getStatusInfo(selectedRequest.status).icon" class="w-5 h-5 text-gray-500" />
+        <span class="text-gray-600">Status</span>
+      </div>
+      <span
+        class="px-3 py-1 rounded-full text-sm font-semibold"
+        [ngClass]="getStatusInfo(selectedRequest.status).class"
+      >
+        {{ getStatusInfo(selectedRequest.status).text }}
+      </span>
+    </div>
+
+    <!-- User ID -->
+    <div class="flex items-start gap-3 pb-3 border-b border-gray-200">
+      <lucide-angular [img]="User" class="w-5 h-5 text-gray-500 mt-1" />
+      <div class="flex-1">
+        <p class="text-sm text-gray-500 mb-1">User ID</p>
+        <p class="text-gray-800 font-mono text-sm break-all">{{ selectedRequest.userId }}</p>
+      </div>
+    </div>
+
+    <!-- Consultative ID -->
+    @if (selectedRequest.consultativeId) {
+    <div class="flex items-start gap-3 pb-3 border-b border-gray-200">
+      <lucide-angular [img]="User" class="w-5 h-5 text-gray-500 mt-1" />
+      <div class="flex-1">
+        <p class="text-sm text-gray-500 mb-1">Consultative ID</p>
+        <p class="text-gray-800 font-mono text-sm break-all">{{ selectedRequest.consultativeId }}</p>
+      </div>
+    </div>
+    }
+
+    <!-- Staff Message -->
+    @if (selectedRequest.staffMsg) {
+    <div class="flex items-start gap-3 pb-3 border-b border-gray-200">
+      <lucide-angular [img]="MessageSquare" class="w-5 h-5 text-gray-500 mt-1" />
+      <div class="flex-1">
+        <p class="text-sm text-gray-500 mb-1">Staff Message</p>
+        <p class="text-gray-800 whitespace-pre-wrap">{{ selectedRequest.staffMsg }}</p>
+      </div>
+    </div>
+    }
+
+    <!-- Date -->
+    <div class="flex items-start gap-3 pt-1">
+      <lucide-angular [img]="Calendar" class="w-5 h-5 text-gray-500 mt-1" />
+      <div class="flex-1">
+        <p class="text-sm text-gray-500 mb-1">Request Date</p>
+        <p class="text-gray-800">{{ formatDate(selectedRequest.createdOn) }}</p>
+      </div>
+    </div>
+  </div>
+  }
+  <ng-template pTemplate="footer">
+    <div class="flex justify-between gap-3">
+      <button
+        type="button"
+        (click)="closeDetailsDialog(); openUpdateStatusDialog(selectedRequest!)"
+        class="px-4 py-2 bg-[#0d5a4b] text-white rounded-lg hover:bg-[#0f7a65] transition-colors flex items-center gap-2"
+      >
+        <lucide-angular [img]="Send" class="w-4 h-4" />
+        Update Status
+      </button>
+      <button
+        type="button"
+        (click)="closeDetailsDialog()"
+        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+      >
+        Close
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Update Status Dialog -->
+<p-dialog
+  [(visible)]="updateStatusDialogVisible"
+  [modal]="true"
+  [style]="{ width: '500px', maxWidth: '95vw' }"
+  header="Update Request Status"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeUpdateStatusDialog()"
+>
+  @if (selectedRequest) {
+  <div class="flex flex-col gap-5">
+    <!-- Current Info -->
+    <div class="bg-gray-50 rounded-lg p-3">
+      <p class="text-sm text-gray-500 mb-1">Consultation</p>
+      <p class="font-semibold text-gray-800">{{ selectedRequest.consultationNameEn }}</p>
+    </div>
+
+    <!-- Status Selection -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">New Status</label>
+      <select
+        [(ngModel)]="newStatus"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
+      >
+        <option [ngValue]="null">Select Status</option>
+        <option [ngValue]="'Pending'">Pending</option>
+        <option [ngValue]="'InProgress'">In Progress</option>
+        <option [ngValue]="'Completed'">Completed</option>
+        <option [ngValue]="'Rejected'">Rejected</option>
+      </select>
+    </div>
+
+    <!-- Staff Message -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Staff Message (Optional)</label>
+      <textarea
+        [(ngModel)]="staffMessage"
+        rows="4"
+        placeholder="Enter a message for the user..."
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent resize-none"
+      ></textarea>
+    </div>
+  </div>
+  }
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3">
+      <button
+        type="button"
+        (click)="closeUpdateStatusDialog()"
+        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+        [disabled]="updatingStatus"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        (click)="updateStatus()"
+        [disabled]="newStatus === null || updatingStatus"
+        class="px-4 py-2 bg-[#0d5a4b] text-white rounded-lg hover:bg-[#0f7a65] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+      >
+        @if (updatingStatus) {
+        <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        Updating...
+        } @else {
+        <lucide-angular [img]="CheckCircle2" class="w-4 h-4" />
+        Update Status
+        }
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Delete Confirmation Dialog -->
+<p-dialog
+  [(visible)]="deleteDialogVisible"
+  [modal]="true"
+  [style]="{ width: '450px', maxWidth: '95vw' }"
+  header="Delete Consultation Request"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeDeleteDialog()"
+>
+  @if (requestToDelete) {
+  <div class="flex flex-col gap-4">
+    <div class="flex items-start gap-3">
+      <lucide-angular [img]="AlertCircle" class="w-6 h-6 text-red-600 mt-0.5 flex-shrink-0" />
+      <div class="flex-1">
+        <p class="text-gray-800 mb-2">
+          Are you sure you want to delete this consultation request?
+        </p>
+        <div class="bg-gray-50 rounded-lg p-3 mt-3">
+          <p class="text-sm text-gray-500 mb-1">Consultation Type</p>
+          <p class="font-semibold text-gray-800">{{ requestToDelete.consultationNameEn }}</p>
+          <p class="text-sm text-gray-600 mt-1" dir="rtl">{{ requestToDelete.consultationNameAr }}</p>
+        </div>
+        <p class="text-sm text-red-600 mt-3 font-medium">This action cannot be undone.</p>
+      </div>
+    </div>
+  </div>
+  }
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3">
+      <button
+        type="button"
+        (click)="closeDeleteDialog()"
+        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+        [disabled]="deleting"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        (click)="deleteRequest()"
+        [disabled]="deleting"
+        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+      >
+        @if (deleting) {
+        <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        Deleting...
+        } @else {
+        <lucide-angular [img]="Trash2" class="w-4 h-4" />
+        Delete
+        }
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

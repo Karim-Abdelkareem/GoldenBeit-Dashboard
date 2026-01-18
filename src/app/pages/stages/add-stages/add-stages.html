@@ -200,6 +200,78 @@
         </div>
         }
       </div>
+
+      <!-- Image Upload -->
+      <div class="pt-6 border-t border-gray-200">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Stage Image <span class="text-red-500">*</span>
+        </label>
+        <input
+          #fileInput
+          id="image"
+          type="file"
+          accept="image/*"
+          (change)="onFileSelected($event)"
+          class="hidden"
+        />
+        @if (!imagePreview()) {
+        <!-- Upload Placeholder -->
+        <div
+          (click)="triggerFileInput()"
+          class="max-w-64 h-64 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-colors"
+        >
+          <div class="flex flex-col items-center gap-2">
+            <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+            </div>
+            <p class="text-sm text-gray-500">Click to upload image</p>
+          </div>
+        </div>
+        } @else {
+        <!-- Image Preview -->
+        <div class="relative inline-block group">
+          <div (click)="triggerFileInput()" class="cursor-pointer relative">
+            <img
+              [src]="imagePreview()"
+              alt="Preview"
+              class="max-w-64 h-64 rounded-lg border border-gray-300 shadow-md object-cover hover:opacity-90 transition-opacity"
+            />
+            <div
+              class="absolute inset-0 bg-black/20 bg-opacity-0 hover:bg-opacity-10 rounded-lg transition-all flex items-center justify-center"
+            >
+              <span
+                class="text-white opacity-0 group-hover:opacity-100 transition-opacity text-sm font-medium bg-black/50 bg-opacity-50 px-3 py-1 rounded"
+              >
+                Click to change image
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            (click)="removeImage(); $event.stopPropagation()"
+            class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors shadow-lg z-10"
+            title="Remove image"
+          >
+            <lucide-angular [img]="X" class="w-5 h-5" />
+          </button>
+        </div>
+        } @if (f['image'].get('data')?.invalid && f['image'].get('data')?.touched) {
+        <p class="mt-1 text-sm text-red-500">Image is required</p>
+        }
+      </div>
     </div>
 
     <!-- Action Buttons -->

@@ -8,6 +8,7 @@ export interface StageInterface {
   projectNameAr?: string;
   projectNameEn?: string;
   cityNames?: string[];
+  imagePath?: string;
 }
 
 export interface Stage {

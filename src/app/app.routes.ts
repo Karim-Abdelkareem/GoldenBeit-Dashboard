@@ -31,6 +31,11 @@ export const routes: Routes = [
         title: 'View Articles',
       },
       {
+        path: 'consultation-requests',
+        loadComponent: () => import('./pages/consultation-requests/consultation-requests').then((m) => m.ConsultationRequests),
+        title: 'View Consultation Requests',
+      },
+      {
         path: 'articles/add',
         loadComponent: () =>
           import('./pages/article/add-articles/add-articles').then((m) => m.AddArticles),
@@ -147,6 +152,22 @@ export const routes: Routes = [
         path: 'estate-units',
         loadComponent: () => import('./pages/estate-unit/estate-unit').then((m) => m.EstateUnit),
         title: 'View Estate Units',
+      },
+      {
+        path: 'estate-units/details/:id',
+        loadComponent: () =>
+          import('./pages/estate-unit/estate-unit-details/estate-unit-details').then(
+            (m) => m.EstateUnitDetails
+          ),
+        title: 'Estate Unit Details',
+      },
+      {
+        path: 'estate-units/edit/:id',
+        loadComponent: () =>
+          import('./pages/estate-unit/edit-estate-unit/edit-estate-unit').then(
+            (m) => m.EditEstateUnit
+          ),
+        title: 'Edit Estate Unit',
       },
       {
         path: 'fa-questions',
