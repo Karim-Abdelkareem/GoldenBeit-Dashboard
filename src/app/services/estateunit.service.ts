@@ -6,7 +6,7 @@ import { environment } from '../environment/environment';
   providedIn: 'root',
 })
 export class EstateunitService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getEstateUnits(page: number = 1, pageSize: number = 9, filters?: any) {
     const requestBody: any = {
@@ -40,7 +40,7 @@ export class EstateunitService {
       if (filters.forType !== undefined && filters.forType !== null) {
         requestBody.forType = Number(filters.forType);
       }
-      
+
       // Add price filters using advancedFilter
       const priceFilters: any[] = [];
       if (filters.minPrice !== undefined && filters.minPrice !== null) {
@@ -57,7 +57,7 @@ export class EstateunitService {
           value: Number(filters.maxPrice),
         });
       }
-      
+
       if (priceFilters.length > 0) {
         if (priceFilters.length === 1) {
           requestBody.advancedFilter = priceFilters[0];
@@ -70,7 +70,7 @@ export class EstateunitService {
       }
     }
 
-    return this.http.post(`${environment.apiUrl}/v1/estateunit/search`, requestBody);
+    return this.http.post(`${environment.apiUrl}/v1/estateunit/admin-search`, requestBody);
   }
 
   getEstateUnit(id: string) {

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, signal, CUSTOM_ELEMENTS_SCHEMA, HostListener } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -29,6 +29,10 @@ import {
   Tag,
   Edit,
   Save,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
 } from 'lucide-angular';
 import { HotToastService } from '@ngxpert/hot-toast';
 import { environment } from '../../../environment/environment';
@@ -49,6 +53,10 @@ export class EstateUnitDetails implements OnInit {
   newStatus: number | null = null;
   approverMessage: string = '';
   isApproved: boolean = false;
+
+  // Image modal state
+  imageModalVisible = false;
+  selectedImageIndex = 0;
 
   // Icons
   protected readonly ArrowLeft = ArrowLeft;
@@ -73,6 +81,10 @@ export class EstateUnitDetails implements OnInit {
   protected readonly Tag = Tag;
   protected readonly Edit = Edit;
   protected readonly Save = Save;
+  protected readonly X = X;
+  protected readonly ChevronLeft = ChevronLeft;
+  protected readonly ChevronRight = ChevronRight;
+  protected readonly ZoomIn = ZoomIn;
 
   constructor(
     private route: ActivatedRoute,
@@ -215,5 +227,52 @@ export class EstateUnitDetails implements OnInit {
       { value: 3, label: 'Requested' },
       { value: 4, label: 'Sold' },
     ];
+  }
+
+  // Image modal methods
+  openImageModal(index: number): void {
+    this.selectedImageIndex = index;
+    this.imageModalVisible = true;
+    // Prevent body scrolling when modal is open
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeImageModal(): void {
+    this.imageModalVisible = false;
+    // Restore body scrolling
+    document.body.style.overflow = '';
+  }
+
+  nextImage(): void {
+    const images = this.getValidImages();
+    if (images.length > 0) {
+      this.selectedImageIndex = (this.selectedImageIndex + 1) % images.length;
+    }
+  }
+
+  previousImage(): void {
+    const images = this.getValidImages();
+    if (images.length > 0) {
+      this.selectedImageIndex = (this.selectedImageIndex - 1 + images.length) % images.length;
+    }
+  }
+
+  selectImage(index: number): void {
+    this.selectedImageIndex = index;
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent): void {
+    if (!this.imageModalVisible) return;
+    
+    if (event.key === 'Escape') {
+      this.closeImageModal();
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      this.nextImage();
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      this.previousImage();
+    }
   }
 }
