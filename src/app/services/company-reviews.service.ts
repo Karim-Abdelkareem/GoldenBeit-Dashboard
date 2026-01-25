@@ -7,7 +7,7 @@ import { CompanyReviewFormData } from '../interfaces/company-reviews.interface';
   providedIn: 'root',
 })
 export class CompanyReviewsService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getCompanyReviews(page: number = 1, pageSize: number = 9) {
     return this.http.post(
@@ -41,7 +41,7 @@ export class CompanyReviewsService {
   }
 
   updateCompanyReview(id: string, companyReview: CompanyReviewFormData) {
-    return this.http.put(`${environment.apiUrl}/v1/companyreview/${id}`, companyReview, {
+    return this.http.put(`${environment.apiUrl}/v1/companyreview/${id}`, { id, ...companyReview }, {
       headers: {
         tenant: 'root',
       },

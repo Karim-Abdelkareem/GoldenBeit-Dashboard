@@ -40,19 +40,22 @@ export class Sidebar implements OnInit {
   protected readonly PanelLeftOpen = PanelLeftOpen;
   protected readonly LogOut = LogOut;
   protected readonly ChevronDown = ChevronDown;
-  
+
   // Track expanded items
   expandedItems = new Set<string>();
+
+  // Items allowed for Consultative role
+  private readonly consultativeAllowedItems = ['Consultations', 'Consultation Requests'];
 
   constructor(
     private hotToastService: HotToastService,
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Auto-expand items with active child routes on init
-    this.GeneralItems.forEach((item) => {
+    this.filteredMenuItems.forEach((item) => {
       if (item.items && this.isChildRouteActive(item)) {
         this.expandedItems.add(item.label);
       }
@@ -62,8 +65,29 @@ export class Sidebar implements OnInit {
   get isLoggedIn() {
     return this.authService.isLoggedIn();
   }
+
   get user() {
     return this.authService.getUser();
+  }
+
+  // Check if user has Consultative role
+  get isConsultativeRole(): boolean {
+    const user = this.user;
+    if (!user) return false;
+
+    // Check roleName field (primary), then fallback to other possible fields
+    const roleName = user.roleName || user.role || user.roles?.[0];
+    return roleName === 'Consultative';
+  }
+
+  // Get filtered menu items based on user role
+  get filteredMenuItems() {
+    if (this.isConsultativeRole) {
+      return this.GeneralItems.filter(item =>
+        this.consultativeAllowedItems.includes(item.label)
+      );
+    }
+    return this.GeneralItems;
   }
   @Input() isOpen!: boolean;
   @Output() isOpenChange = new EventEmitter<boolean>();
@@ -273,6 +297,7 @@ export class Sidebar implements OnInit {
         },
       ],
     },
+    { label: 'Unit Requests', icon: House, route: '/unit-requests' },
     {
       label: 'Unit Type',
       icon: House,

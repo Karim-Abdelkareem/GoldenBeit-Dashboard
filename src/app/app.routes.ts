@@ -36,6 +36,11 @@ export const routes: Routes = [
         title: 'View Consultation Requests',
       },
       {
+        path: 'unit-requests',
+        loadComponent: () => import('./pages/unit-request/unit-request').then((m) => m.UnitRequest),
+        title: 'View Unit Requests',
+      },
+      {
         path: 'articles/add',
         loadComponent: () =>
           import('./pages/article/add-articles/add-articles').then((m) => m.AddArticles),

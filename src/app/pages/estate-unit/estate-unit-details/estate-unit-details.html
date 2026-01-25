@@ -7,25 +7,21 @@
     </div>
   </div>
   } @else if (estateUnit()) {
-  
+
   <!-- Header Bar -->
   <div class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
     <div class="container mx-auto px-4 py-4 max-w-7xl">
       <div class="flex items-center justify-between">
-        <button
-          (click)="goBack()"
-          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
-        >
+        <button (click)="goBack()"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700">
           <lucide-angular [img]="ArrowLeft" class="w-5 h-5" />
           <span class="font-medium">Back</span>
         </button>
-        
+
         <div class="flex items-center gap-3">
           @if (estateUnit()?.status !== undefined) {
-          <span
-            class="px-4 py-1.5 rounded-full text-sm font-semibold"
-            [ngClass]="getStatusBadge(estateUnit()?.status).class"
-          >
+          <span class="px-4 py-1.5 rounded-full text-sm font-semibold"
+            [ngClass]="getStatusBadge(estateUnit()?.status).class">
             {{ getStatusBadge(estateUnit()?.status).text }}
           </span>
           }
@@ -36,10 +32,8 @@
             {{ estateUnit()?.isApproved ? 'Approved' : 'Not Approved' }}
           </span>
           }
-          <button
-            (click)="openUpdateDialog()"
-            class="inline-flex items-center gap-2 px-4 py-2 bg-[#0d5a4b] text-white rounded-lg hover:bg-[#0f7a65] transition-colors font-medium"
-          >
+          <button (click)="openUpdateDialog()"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-[#0d5a4b] text-white rounded-lg hover:bg-[#0f7a65] transition-colors font-medium">
             <lucide-angular [img]="Edit" class="w-4 h-4" />
             <span>Update Status</span>
           </button>
@@ -50,32 +44,20 @@
 
   <div class="container mx-auto px-4 py-8 max-w-7xl">
     <div class="grid lg:grid-cols-3 gap-8">
-      
+
       <!-- Main Content - Left Side -->
       <div class="lg:col-span-2 space-y-8">
-        
+
         <!-- Image Gallery -->
-        <div class="relative rounded-2xl overflow-hidden shadow-lg bg-gray-900 aspect-[16/10]">
+        <div class="relative rounded-2xl overflow-hidden shadow-lg bg-gray-900 aspect-16/10">
           @if (getValidImages().length > 0) {
-          <swiper-container
-            class="w-full h-full"
-            slides-per-view="1"
-            navigation="true"
-            pagination="true"
-            loop="true"
-            autoplay="true"
-            autoplay-delay="4000"
-            autoplay-disable-on-interaction="false"
-          >
+          <swiper-container class="w-full h-full" slides-per-view="1" navigation="true" pagination="true" loop="true"
+            autoplay="true" autoplay-delay="4000" autoplay-disable-on-interaction="false">
             @for (image of getValidImages(); track image.id; let i = $index) {
             <swiper-slide>
-              <img
-                [src]="getImageUrlFromPath(image.imagePath)"
-                [alt]="estateUnit()?.titleEn || 'Property Image'"
+              <img [src]="getImageUrlFromPath(image.imagePath)" [alt]="estateUnit()?.titleEn || 'Property Image'"
                 class="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity"
-                (click)="openImageModal(i)"
-                onerror="this.src='/blog/3.jpg'"
-              />
+                (click)="openImageModal(i)" onerror="this.src='/blog/3.jpg'" />
             </swiper-slide>
             }
           </swiper-container>
@@ -84,10 +66,8 @@
             <div class="bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm font-medium">
               {{ getValidImages().length }} Photos
             </div>
-            <button 
-              (click)="openImageModal(0)"
-              class="bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm font-medium hover:bg-black/80 transition-colors flex items-center gap-1.5"
-            >
+            <button (click)="openImageModal(0)"
+              class="bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm font-medium hover:bg-black/80 transition-colors flex items-center gap-1.5">
               <lucide-angular [img]="ZoomIn" class="w-4 h-4" />
               View Full Size
             </button>
@@ -111,7 +91,7 @@
             }
           </div>
           }
-          
+
           <!-- Location Badge -->
           @if (estateUnit()?.cityNameEn || estateUnit()?.location) {
           <div class="flex items-center gap-2 mt-4 text-gray-600">
@@ -260,14 +240,16 @@
                 <lucide-angular [img]="Compass" class="w-4 h-4" />
                 Coordinates
               </span>
-              <span class="font-semibold text-gray-900">{{ estateUnit()?.latitude }}, {{ estateUnit()?.longitude }}</span>
+              <span class="font-semibold text-gray-900">{{ estateUnit()?.latitude }}, {{ estateUnit()?.longitude
+                }}</span>
             </div>
             }
           </div>
         </div>
 
         <!-- Payment Details -->
-        @if (estateUnit()?.paidPrice || estateUnit()?.remainingPrice || estateUnit()?.meterPrice || estateUnit()?.overPrice || estateUnit()?.paymentMethod !== undefined || estateUnit()?.installmentPeriod) {
+        @if (estateUnit()?.paidPrice || estateUnit()?.remainingPrice || estateUnit()?.meterPrice ||
+        estateUnit()?.overPrice || estateUnit()?.paymentMethod !== undefined || estateUnit()?.installmentPeriod) {
         <div class="bg-white rounded-2xl p-6 shadow-sm">
           <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
             <lucide-angular [img]="CreditCard" class="w-5 h-5 text-[#0d5a4b]" />
@@ -277,25 +259,29 @@
             @if (estateUnit()?.paidPrice) {
             <div class="bg-green-50 rounded-xl p-4">
               <p class="text-sm text-green-700 font-medium mb-1">Paid Amount</p>
-              <p class="text-xl font-bold text-green-800">{{ formatPrice(estateUnit()?.paidPrice, estateUnit()?.paidPriceCurrency) }}</p>
+              <p class="text-xl font-bold text-green-800">{{ formatPrice(estateUnit()?.paidPrice,
+                estateUnit()?.paidPriceCurrency) }}</p>
             </div>
             }
             @if (estateUnit()?.remainingPrice) {
             <div class="bg-amber-50 rounded-xl p-4">
               <p class="text-sm text-amber-700 font-medium mb-1">Remaining Amount</p>
-              <p class="text-xl font-bold text-amber-800">{{ formatPrice(estateUnit()?.remainingPrice, estateUnit()?.remainingPriceCurrency) }}</p>
+              <p class="text-xl font-bold text-amber-800">{{ formatPrice(estateUnit()?.remainingPrice,
+                estateUnit()?.remainingPriceCurrency) }}</p>
             </div>
             }
             @if (estateUnit()?.meterPrice) {
             <div class="bg-gray-50 rounded-xl p-4">
               <p class="text-sm text-gray-600 font-medium mb-1">Price per m²</p>
-              <p class="text-xl font-bold text-gray-800">{{ formatPrice(estateUnit()?.meterPrice, estateUnit()?.meterPriceCurrency) }}</p>
+              <p class="text-xl font-bold text-gray-800">{{ formatPrice(estateUnit()?.meterPrice,
+                estateUnit()?.meterPriceCurrency) }}</p>
             </div>
             }
             @if (estateUnit()?.overPrice) {
             <div class="bg-gray-50 rounded-xl p-4">
               <p class="text-sm text-gray-600 font-medium mb-1">Over Price</p>
-              <p class="text-xl font-bold text-gray-800">{{ formatPrice(estateUnit()?.overPrice, estateUnit()?.overPriceCurrency) }}</p>
+              <p class="text-xl font-bold text-gray-800">{{ formatPrice(estateUnit()?.overPrice,
+                estateUnit()?.overPriceCurrency) }}</p>
             </div>
             }
             @if (estateUnit()?.paymentMethod !== undefined) {
@@ -315,7 +301,8 @@
         }
 
         <!-- Additional Info -->
-        @if (estateUnit()?.policy || estateUnit()?.approverMessage || estateUnit()?.viewCount !== undefined || estateUnit()?.viewable !== undefined) {
+        @if (estateUnit()?.policy || estateUnit()?.approverMessage || estateUnit()?.viewCount !== undefined ||
+        estateUnit()?.viewable !== undefined) {
         <div class="bg-white rounded-2xl p-6 shadow-sm">
           <h3 class="text-xl font-bold text-gray-900 mb-6">Additional Information</h3>
           <div class="space-y-4">
@@ -344,8 +331,7 @@
               @if (estateUnit()?.viewable !== undefined) {
               <div class="flex items-center gap-3 p-4 rounded-xl"
                 [ngClass]="estateUnit()?.viewable ? 'bg-green-50' : 'bg-red-50'">
-                <lucide-angular [img]="estateUnit()?.viewable ? CheckCircle2 : XCircle" 
-                  class="w-5 h-5"
+                <lucide-angular [img]="estateUnit()?.viewable ? CheckCircle2 : XCircle" class="w-5 h-5"
                   [ngClass]="estateUnit()?.viewable ? 'text-green-600' : 'text-red-600'" />
                 <div>
                   <p class="text-xs" [ngClass]="estateUnit()?.viewable ? 'text-green-600' : 'text-red-600'">Viewable</p>
@@ -364,20 +350,21 @@
       <!-- Sidebar - Right Side -->
       <div class="lg:col-span-1">
         <div class="sticky top-24 space-y-6">
-          
+
           <!-- Price Card -->
           <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div class="bg-gradient-to-r from-[#0d5a4b] to-[#146b5a] p-6">
               <p class="text-white/80 text-sm font-medium mb-1">Total Price</p>
               @if (estateUnit()?.totalPrice) {
-              <p class="text-3xl font-bold text-white">{{ formatPrice(estateUnit()?.totalPrice, estateUnit()?.totalPriceCurrency) }}</p>
+              <p class="text-3xl font-bold text-white">{{ formatPrice(estateUnit()?.totalPrice,
+                estateUnit()?.totalPriceCurrency) }}</p>
               } @else {
               <p class="text-2xl font-bold text-white/60">Contact for Price</p>
               }
             </div>
             <div class="p-6 space-y-4">
               @if (estateUnit()?.phoneNumber) {
-              <a href="tel:{{ estateUnit()?.phoneNumber }}" 
+              <a href="tel:{{ estateUnit()?.phoneNumber }}"
                 class="flex items-center justify-center gap-2 w-full py-3 px-4 bg-[#e2b43a] hover:bg-[#d4a530] text-[#0d5a4b] font-bold rounded-xl transition-colors">
                 <lucide-angular [img]="Phone" class="w-5 h-5" />
                 Call Now
@@ -483,10 +470,8 @@
       </div>
       <p class="text-gray-700 text-2xl font-bold mb-2">Property Not Found</p>
       <p class="text-gray-500 text-base mb-8">The property you're looking for doesn't exist or has been removed.</p>
-      <button
-        (click)="goBack()"
-        class="px-8 py-3 rounded-xl bg-[#0d5a4b] text-white font-semibold hover:bg-[#0a4a3d] transition-colors"
-      >
+      <button (click)="goBack()"
+        class="px-8 py-3 rounded-xl bg-[#0d5a4b] text-white font-semibold hover:bg-[#0a4a3d] transition-colors">
         Back to Listings
       </button>
     </div>
@@ -495,15 +480,8 @@
 </div>
 
 <!-- Update Status Dialog -->
-<p-dialog
-  [(visible)]="updateDialogVisible"
-  [modal]="true"
-  [style]="{ width: '500px', maxWidth: '95vw' }"
-  header="Update Estate Unit Status"
-  [draggable]="false"
-  [resizable]="false"
-  (onHide)="closeUpdateDialog()"
->
+<p-dialog [(visible)]="updateDialogVisible" [modal]="true" [style]="{ width: '500px', maxWidth: '95vw' }"
+  header="Update Estate Unit Status" [draggable]="false" [resizable]="false" (onHide)="closeUpdateDialog()">
   <div class="flex flex-col gap-5">
     <!-- Current Info -->
     <div class="bg-gray-50 rounded-lg p-3">
@@ -514,10 +492,8 @@
     <!-- Status Selection -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-      <select
-        [(ngModel)]="newStatus"
-        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
-      >
+      <select [(ngModel)]="newStatus"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent">
         @for (option of getStatusOptions(); track option.value) {
         <option [value]="option.value">{{ option.label }}</option>
         }
@@ -527,42 +503,28 @@
     <!-- Approver Message -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-2">Approver Message (Optional)</label>
-      <textarea
-        [(ngModel)]="approverMessage"
-        rows="4"
-        placeholder="Enter approver message..."
-        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent resize-none"
-      ></textarea>
+      <textarea [(ngModel)]="approverMessage" rows="4" placeholder="Enter approver message..."
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent resize-none"></textarea>
     </div>
 
     <!-- Is Approved -->
     <div>
       <label class="flex items-center gap-3 cursor-pointer">
-        <input
-          type="checkbox"
-          [(ngModel)]="isApproved"
-          class="w-5 h-5 text-[#0d5a4b] border-gray-300 rounded focus:ring-[#0d5a4b]"
-        />
+        <input type="checkbox" [(ngModel)]="isApproved"
+          class="w-5 h-5 text-[#0d5a4b] border-gray-300 rounded focus:ring-[#0d5a4b]" />
         <span class="text-sm font-medium text-gray-700">Is Approved</span>
       </label>
     </div>
   </div>
   <ng-template pTemplate="footer">
     <div class="flex justify-end gap-3">
-      <button
-        type="button"
-        (click)="closeUpdateDialog()"
+      <button type="button" (click)="closeUpdateDialog()"
         class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-        [disabled]="updating"
-      >
+        [disabled]="updating">
         Cancel
       </button>
-      <button
-        type="button"
-        (click)="updateStatus()"
-        [disabled]="newStatus === null || updating"
-        class="px-4 py-2 bg-[#0d5a4b] text-white rounded-lg hover:bg-[#0f7a65] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-      >
+      <button type="button" (click)="updateStatus()" [disabled]="newStatus === null || updating"
+        class="px-4 py-2 bg-[#0d5a4b] text-white rounded-lg hover:bg-[#0f7a65] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
         @if (updating) {
         <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
         Updating...
@@ -583,47 +545,34 @@
     <div class="text-white font-medium">
       {{ selectedImageIndex + 1 }} / {{ getValidImages().length }}
     </div>
-    <button 
-      (click)="closeImageModal()"
-      class="p-2 rounded-full hover:bg-white/10 transition-colors text-white"
-      title="Close (Esc)"
-    >
+    <button (click)="closeImageModal()" class="p-2 rounded-full hover:bg-white/10 transition-colors text-white"
+      title="Close (Esc)">
       <lucide-angular [img]="X" class="w-6 h-6" />
     </button>
   </div>
 
   <!-- Main Image Container -->
-  <div 
-    class="flex-1 flex items-center justify-center relative px-4 py-2 overflow-hidden"
-    (click)="closeImageModal()"
-  >
+  <div class="flex-1 flex items-center justify-center relative px-4 py-2 overflow-hidden" (click)="closeImageModal()">
     <!-- Previous Button -->
     @if (getValidImages().length > 1) {
-    <button 
-      (click)="previousImage(); $event.stopPropagation()"
+    <button (click)="previousImage(); $event.stopPropagation()"
       class="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white z-10"
-      title="Previous (←)"
-    >
+      title="Previous (←)">
       <lucide-angular [img]="ChevronLeft" class="w-8 h-8" />
     </button>
     }
 
     <!-- Full Size Image -->
-    <img
-      [src]="getImageUrlFromPath(getValidImages()[selectedImageIndex]?.imagePath || '')"
+    <img [src]="getImageUrlFromPath(getValidImages()[selectedImageIndex]?.imagePath || '')"
       [alt]="estateUnit()?.titleEn || 'Property Image'"
-      class="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-      (click)="$event.stopPropagation()"
-      onerror="this.src='/blog/3.jpg'"
-    />
+      class="max-w-full max-h-full object-contain rounded-lg shadow-2xl" (click)="$event.stopPropagation()"
+      onerror="this.src='/blog/3.jpg'" />
 
     <!-- Next Button -->
     @if (getValidImages().length > 1) {
-    <button 
-      (click)="nextImage(); $event.stopPropagation()"
+    <button (click)="nextImage(); $event.stopPropagation()"
       class="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white z-10"
-      title="Next (→)"
-    >
+      title="Next (→)">
       <lucide-angular [img]="ChevronRight" class="w-8 h-8" />
     </button>
     }
@@ -634,17 +583,11 @@
   <div class="px-4 py-3 bg-black/50">
     <div class="flex justify-center gap-2 overflow-x-auto max-w-full py-1">
       @for (image of getValidImages(); track image.id; let i = $index) {
-      <button
-        (click)="selectImage(i)"
+      <button (click)="selectImage(i)"
         class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all"
-        [ngClass]="i === selectedImageIndex ? 'border-white opacity-100 scale-105' : 'border-transparent opacity-60 hover:opacity-80'"
-      >
-        <img
-          [src]="getImageUrlFromPath(image.imagePath)"
-          [alt]="'Thumbnail ' + (i + 1)"
-          class="w-full h-full object-cover"
-          onerror="this.src='/blog/3.jpg'"
-        />
+        [ngClass]="i === selectedImageIndex ? 'border-white opacity-100 scale-105' : 'border-transparent opacity-60 hover:opacity-80'">
+        <img [src]="getImageUrlFromPath(image.imagePath)" [alt]="'Thumbnail ' + (i + 1)"
+          class="w-full h-full object-cover" onerror="this.src='/blog/3.jpg'" />
       </button>
       }
     </div>

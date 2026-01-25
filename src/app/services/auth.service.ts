@@ -14,6 +14,10 @@ export class AuthService {
   // Keep signal for backward compatibility
   user = signal<any | null>(null);
 
+  // Flag to prevent multiple refresh requests
+  private isRefreshing = false;
+  private refreshTokenSubject = new BehaviorSubject<string | null>(null);
+
   constructor(private http: HttpClient) {
     // Load user from localStorage on service initialization
     this.loadUserFromStorage();
@@ -44,13 +48,51 @@ export class AuthService {
   login(email: string, password: string) {
     return this.http.post(`${environment.apiUrl}/tokens`, { email, password }).pipe(
       tap((response: any) => {
+        // Merge roleName into user object if it exists at root level
+        const userWithRole = {
+          ...response.user,
+          roleName: response.roleName || response.user?.roleName,
+        };
+
         // Save user to BehaviorSubject and localStorage
-        this.userSubject.next(response.user);
-        this.user.set(response.user);
-        this.saveUserToStorage(response.user);
+        this.userSubject.next(userWithRole);
+        this.user.set(userWithRole);
+        this.saveUserToStorage(userWithRole);
         localStorage.setItem('token', response.token);
+        // Store refresh token if provided
+        if (response.refreshToken) {
+          localStorage.setItem('refreshToken', response.refreshToken);
+        }
       })
     );
+  }
+
+  refreshToken(): Observable<any> {
+    const token = this.getToken();
+    const refreshToken = this.getRefreshToken();
+
+    return this.http
+      .post(`${environment.apiUrl}/tokens/refresh`, {
+        token,
+        refreshToken,
+      })
+      .pipe(
+        tap((response: any) => {
+          // Update tokens in localStorage
+          if (response.token) {
+            localStorage.setItem('token', response.token);
+          }
+          if (response.refreshToken) {
+            localStorage.setItem('refreshToken', response.refreshToken);
+          }
+          // Update user if provided
+          if (response.user) {
+            this.userSubject.next(response.user);
+            this.user.set(response.user);
+            this.saveUserToStorage(response.user);
+          }
+        })
+      );
   }
 
   getUser() {
@@ -60,6 +102,14 @@ export class AuthService {
 
   getToken() {
     return localStorage.getItem('token');
+  }
+
+  getRefreshToken() {
+    return localStorage.getItem('refreshToken');
+  }
+
+  hasRefreshToken(): boolean {
+    return !!this.getRefreshToken();
   }
 
   isLoggedIn() {
@@ -77,5 +127,18 @@ export class AuthService {
     this.userSubject.next(user);
     this.user.set(user);
     this.saveUserToStorage(user);
+  }
+
+  // Getters for refresh state management (used by interceptor)
+  get isRefreshingToken(): boolean {
+    return this.isRefreshing;
+  }
+
+  set isRefreshingToken(value: boolean) {
+    this.isRefreshing = value;
+  }
+
+  get refreshTokenSubject$(): BehaviorSubject<string | null> {
+    return this.refreshTokenSubject;
   }
 }

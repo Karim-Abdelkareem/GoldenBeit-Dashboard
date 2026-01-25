@@ -20,7 +20,7 @@
   <hr class="border-gray-300 transition-all duration-500 shrink-0" />
   <!-- Navigation items - Scrollable middle section -->
   <div class="flex-1 overflow-y-auto overflow-x-hidden sidebar-navigation">
-    @for (item of GeneralItems; track item.label) {
+    @for (item of filteredMenuItems; track item.label) {
     <!-- Item with sub-items -->
     @if (item.items && item.items.length > 0) {
     <div class="mb-1">
