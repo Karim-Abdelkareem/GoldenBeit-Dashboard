@@ -21,21 +21,35 @@ import {
   Filter,
   X,
   Trash2,
+  UserCheck,
 } from 'lucide-angular';
 import { ConsultationService } from '../../services/consultation.service';
 import { HotToastService } from '@ngxpert/hot-toast';
+import { UserService } from '../../services/user.service';
+import { AuthService } from '../../services/auth.service';
 
 interface ConsultationRequest {
   id: string;
   consultationId: string;
   userId: string;
+  userName?: string | null;
+  userPhoneNumber?: string | null;
   consultativeId?: string | null;
+  consultativeName?: string | null;
   status?: string | null;
   staffMsg?: string | null;
   consultationNameAr: string;
   consultationNameEn: string;
   createdOn: string;
   [key: string]: any;
+}
+
+interface ConsultationUser {
+  id: string;
+  userName: string;
+  firstName: string;
+  lastName: string;
+  email: string;
 }
 
 // Status enum
@@ -83,6 +97,14 @@ export class ConsultationRequests implements OnInit {
   consultations = signal<Array<{ id: string; nameEn: string; nameAr: string }>>([]);
   loadingConsultations = signal<boolean>(false);
 
+  // Assign functionality
+  consultationUsers = signal<ConsultationUser[]>([]);
+  loadingConsultationUsers = signal<boolean>(false);
+  assignDialogVisible = false;
+  requestToAssign: ConsultationRequest | null = null;
+  selectedConsultativeId: string | null = null;
+  assigning = false;
+
   protected readonly Eye = Eye;
   protected readonly Calendar = Calendar;
   protected readonly MessageSquare = MessageSquare;
@@ -99,16 +121,31 @@ export class ConsultationRequests implements OnInit {
   protected readonly Filter = Filter;
   protected readonly X = X;
   protected readonly Trash2 = Trash2;
+  protected readonly UserCheck = UserCheck;
 
   constructor(
     private consultationService: ConsultationService,
     private cdr: ChangeDetectorRef,
-    private hotToastService: HotToastService
+    private hotToastService: HotToastService,
+    private userService: UserService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.loadConsultations();
     this.loadRequests();
+    // Load consultation users if user is admin
+    if (this.isAdmin()) {
+      this.loadConsultationUsers();
+    }
+  }
+
+  // Check if user is admin (not Consultative role)
+  isAdmin(): boolean {
+    const user = this.authService.getUser();
+    if (!user) return false;
+    const roles: string[] = user.roles || [];
+    return !roles.includes('Consultative');
   }
 
   loadConsultations(): void {
@@ -138,6 +175,54 @@ export class ConsultationRequests implements OnInit {
     this.loading.set(true);
     const currentPage = this.page();
 
+    const user = this.authService.getUser();
+    const roles: string[] = user?.roles || [];
+    const isConsultative = roles.includes('Consultative');
+
+    // If user is Consultative, use the consultative endpoint
+    if (isConsultative && user?.id) {
+      this.consultationService.getConsultationsForConsultative(user.id).subscribe(
+        (response: any) => {
+          let data = response.data || response || [];
+
+          // Apply client-side filtering if needed
+          if (this.selectedStatus !== null) {
+            data = data.filter((r: ConsultationRequest) => r.status === this.selectedStatus);
+          }
+
+          if (this.selectedConsultationId) {
+            data = data.filter((r: ConsultationRequest) => r.consultationId === this.selectedConsultationId);
+          }
+
+          if (this.searchQuery().trim()) {
+            const query = this.searchQuery().toLowerCase().trim();
+            data = data.filter(
+              (r: ConsultationRequest) =>
+                (r.consultationNameEn && r.consultationNameEn.toLowerCase().includes(query)) ||
+                (r.consultationNameAr && r.consultationNameAr.toLowerCase().includes(query))
+            );
+          }
+
+          this.requests.set(data);
+          this.totalPages.set(1);
+          this.totalItems.set(data.length);
+          this.page.set(1);
+          this.hasNextPage.set(false);
+          this.hasPreviousPage.set(false);
+          this.loading.set(false);
+          this.cdr.detectChanges();
+        },
+        (error) => {
+          console.error('Error loading consultation requests:', error);
+          this.hotToastService.error('Failed to load consultation requests');
+          this.loading.set(false);
+          this.cdr.detectChanges();
+        }
+      );
+      return;
+    }
+
+    // Admin users use the regular endpoint with pagination and filters
     const filters: any = {};
 
     // Add search query
@@ -416,5 +501,84 @@ export class ConsultationRequests implements OnInit {
         this.deleting = false;
       }
     );
+  }
+
+  // Load consultation users (users with Consultative role)
+  loadConsultationUsers(): void {
+    this.loadingConsultationUsers.set(true);
+    this.userService.getUsers().subscribe({
+      next: (response: any) => {
+        const users = response.data || response || [];
+        // Filter users with Consultative role
+        const consultationUsersList: ConsultationUser[] = users
+          .filter((user: any) => {
+            const roles = user.roles || [];
+            return roles.includes('Consultative');
+          })
+          .map((user: any) => ({
+            id: user.id,
+            userName: user.userName || '',
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
+            email: user.email || '',
+          }));
+        this.consultationUsers.set(consultationUsersList);
+        this.loadingConsultationUsers.set(false);
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading consultation users:', error);
+        this.loadingConsultationUsers.set(false);
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  // Assign methods
+  openAssignDialog(request: ConsultationRequest): void {
+    this.requestToAssign = request;
+    this.selectedConsultativeId = request.consultativeId || null;
+    this.assignDialogVisible = true;
+  }
+
+  closeAssignDialog(): void {
+    this.assignDialogVisible = false;
+    this.requestToAssign = null;
+    this.selectedConsultativeId = null;
+  }
+
+  assignToConsultationUser(): void {
+    if (!this.requestToAssign) return;
+
+    this.assigning = true;
+    this.consultationService
+      .updateConsultationRequestStatus(
+        this.requestToAssign.id,
+        this.requestToAssign.consultationId,
+        this.selectedConsultativeId,
+        this.requestToAssign.status || 'Pending',
+        this.requestToAssign.staffMsg || undefined
+      )
+      .subscribe({
+        next: () => {
+          this.hotToastService.success('Consultation request assigned successfully');
+          this.closeAssignDialog();
+          this.loadRequests();
+          this.assigning = false;
+        },
+        error: (error) => {
+          console.error('Error assigning consultation request:', error);
+          this.hotToastService.error('Failed to assign consultation request');
+          this.assigning = false;
+        },
+      });
+  }
+
+  getConsultationUserName(consultativeId: string | null): string {
+    if (!consultativeId) return 'Not Assigned';
+    const consultationUser = this.consultationUsers().find((u) => u.id === consultativeId);
+    return consultationUser
+      ? `${consultationUser.firstName} ${consultationUser.lastName}`.trim() || consultationUser.userName
+      : 'Unknown';
   }
 }

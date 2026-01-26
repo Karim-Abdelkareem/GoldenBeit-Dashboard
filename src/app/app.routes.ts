@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { AuthLayoutComponent } from './layouts/auth-layout.component/auth-layout.component';
 import { MainLayoutComponent } from './layouts/main-layout.component/main-layout.component';
 import { authGuardGuard } from './guards/auth.guard-guard';
+import { roleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
   {
@@ -23,7 +24,7 @@ export const routes: Routes = [
   {
     path: '',
     component: MainLayoutComponent,
-    canActivate: [authGuardGuard],
+    canActivate: [authGuardGuard, roleGuard],
     children: [
       {
         path: 'articles',
@@ -39,6 +40,11 @@ export const routes: Routes = [
         path: 'unit-requests',
         loadComponent: () => import('./pages/unit-request/unit-request').then((m) => m.UnitRequest),
         title: 'View Unit Requests',
+      },
+      {
+        path: 'unit-requests/salesstaff',
+        loadComponent: () => import('./pages/unit-request/unit-request').then((m) => m.UnitRequest),
+        title: 'View Unit Requests - Sales Staff',
       },
       {
         path: 'articles/add',

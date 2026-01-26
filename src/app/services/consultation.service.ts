@@ -7,7 +7,7 @@ import { ConsultationFormData } from '../interfaces/cosultation.interface';
   providedIn: 'root',
 })
 export class ConsultationService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getConsultations(page: number = 1, pageSize: number = 9) {
     return this.http.post(
@@ -147,5 +147,19 @@ export class ConsultationService {
         tenant: 'root',
       },
     });
+  }
+
+  getConsultationsForConsultative(consultativeId: string) {
+    return this.http.post(
+      `${environment.apiUrl}/v1/consultationrequest/consultative`,
+      {
+        consultativeId: consultativeId,
+      },
+      {
+        headers: {
+          tenant: 'root',
+        },
+      }
+    );
   }
 }

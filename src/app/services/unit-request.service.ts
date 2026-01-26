@@ -35,4 +35,17 @@ export class UnitRequestService {
   updateUnitRequestStatus(id: string, status: number) {
     return this.http.put(`${environment.apiUrl}/v1/unitrequest/updateunitrequeststatus/${id}`, { id, status });
   }
+
+  salesStaffUnitRequests(salesStaffId: string) {
+    return this.http.post(`${environment.apiUrl}/v1/unitrequest/salesstaff`, {
+      salesStaffId,
+    });
+  }
+
+  assignUnitRequestToSalesStaff(unitRequestId: string, salesStaffId: string) {
+    return this.http.post(`${environment.apiUrl}/v1/unitrequest/${unitRequestId}/assign-sales`, {
+      unitRequestId,
+      salesStaffId,
+    });
+  }
 }

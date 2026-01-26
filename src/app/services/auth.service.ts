@@ -48,10 +48,11 @@ export class AuthService {
   login(email: string, password: string) {
     return this.http.post(`${environment.apiUrl}/tokens`, { email, password }).pipe(
       tap((response: any) => {
-        // Merge roleName into user object if it exists at root level
+        // Merge roles and permissions from root level into user object
         const userWithRole = {
           ...response.user,
-          roleName: response.roleName || response.user?.roleName,
+          roles: response.roles || response.user?.roles || [],
+          permissions: response.permissions || [],
         };
 
         // Save user to BehaviorSubject and localStorage

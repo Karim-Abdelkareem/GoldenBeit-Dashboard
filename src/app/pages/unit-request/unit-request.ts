@@ -25,16 +25,31 @@ import {
 } from 'lucide-angular';
 import { UnitRequestService } from '../../services/unit-request.service';
 import { HotToastService } from '@ngxpert/hot-toast';
+import { AuthService } from '../../services/auth.service';
+import { UserService } from '../../services/user.service';
+import { Router } from '@angular/router';
 
 interface UnitRequestItem {
   id: string;
   unitId: string;
+  unitTitleAr?: string;
+  unitTitleEn?: string;
   userId: string;
-  salesStaffId: string;
+  userName?: string;
+  userPhoneNumber?: string;
+  salesStaffId: string | null;
   status: number;
-  statusMessage: string;
+  statusMessage: string | null;
   createdOn: string;
   [key: string]: any;
+}
+
+interface SalesUser {
+  id: string;
+  userName: string;
+  firstName: string;
+  lastName: string;
+  email: string;
 }
 
 // Status enum mapping
@@ -79,6 +94,14 @@ export class UnitRequest implements OnInit {
   selectedStatus: number | null = null;
   filterDropdownOpen = signal<boolean>(false);
 
+  // Assign functionality
+  salesUsers = signal<SalesUser[]>([]);
+  loadingSalesUsers = signal<boolean>(false);
+  assignDialogVisible = false;
+  requestToAssign: UnitRequestItem | null = null;
+  selectedSalesStaffId: string | null = null;
+  assigning = false;
+
   // Status options
   statusOptions = [
     { value: 0, label: 'Pending' },
@@ -109,18 +132,42 @@ export class UnitRequest implements OnInit {
   constructor(
     private unitRequestService: UnitRequestService,
     private cdr: ChangeDetectorRef,
-    private hotToastService: HotToastService
+    private hotToastService: HotToastService,
+    private authService: AuthService,
+    private userService: UserService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadRequests();
+    // Load sales users if user is admin
+    if (this.isAdmin()) {
+      this.loadSalesUsers();
+    }
+  }
+
+  // Check if user is admin (not Sales role)
+  isAdmin(): boolean {
+    const user = this.authService.getUser();
+    if (!user) return false;
+    const roles: string[] = user.roles || [];
+    return !roles.includes('Sales');
   }
 
   loadRequests(): void {
     this.loading.set(true);
     const currentPage = this.page();
 
-    this.unitRequestService.getUnitRequests(currentPage, this.itemsPerPage()).subscribe({
+    const user = this.authService.getUser();
+    const roles: string[] = user?.roles || [];
+    const isSalesRole = roles.includes('Sales');
+
+    // Use different service method based on user role
+    const request$ = isSalesRole
+      ? this.unitRequestService.salesStaffUnitRequests(user?.id || '')
+      : this.unitRequestService.getUnitRequests(currentPage, this.itemsPerPage());
+
+    request$.subscribe({
       next: (response: any) => {
         let data = response.data || [];
 
@@ -135,7 +182,11 @@ export class UnitRequest implements OnInit {
             (r: UnitRequestItem) =>
               r.unitId.toLowerCase().includes(query) ||
               r.userId.toLowerCase().includes(query) ||
-              r.salesStaffId.toLowerCase().includes(query) ||
+              (r.salesStaffId !== null && r.salesStaffId.toLowerCase().includes(query)) ||
+              (r.userName && r.userName.toLowerCase().includes(query)) ||
+              (r.userPhoneNumber && r.userPhoneNumber.toLowerCase().includes(query)) ||
+              (r.unitTitleEn && r.unitTitleEn.toLowerCase().includes(query)) ||
+              (r.unitTitleAr && r.unitTitleAr.toLowerCase().includes(query)) ||
               (r.statusMessage && r.statusMessage.toLowerCase().includes(query))
           );
         }
@@ -339,6 +390,83 @@ export class UnitRequest implements OnInit {
 
   toggleFilterDropdown(): void {
     this.filterDropdownOpen.set(!this.filterDropdownOpen());
+  }
+
+  // Load sales users (users with Sales role)
+  loadSalesUsers(): void {
+    this.loadingSalesUsers.set(true);
+    this.userService.getUsers().subscribe({
+      next: (response: any) => {
+        const users = response.data || response || [];
+        // Filter users with Sales role
+        const salesUsersList: SalesUser[] = users
+          .filter((user: any) => {
+            const roles = user.roles || [];
+            return roles.includes('Sales');
+          })
+          .map((user: any) => ({
+            id: user.id,
+            userName: user.userName || '',
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
+            email: user.email || '',
+          }));
+        this.salesUsers.set(salesUsersList);
+        this.loadingSalesUsers.set(false);
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading sales users:', error);
+        this.loadingSalesUsers.set(false);
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  // Assign methods
+  openAssignDialog(request: UnitRequestItem): void {
+    this.requestToAssign = request;
+    this.selectedSalesStaffId = request.salesStaffId || null;
+    this.assignDialogVisible = true;
+  }
+
+  closeAssignDialog(): void {
+    this.assignDialogVisible = false;
+    this.requestToAssign = null;
+    this.selectedSalesStaffId = null;
+  }
+
+  assignToSalesStaff(): void {
+    if (!this.requestToAssign || !this.selectedSalesStaffId) return;
+
+    this.assigning = true;
+    this.unitRequestService
+      .assignUnitRequestToSalesStaff(this.requestToAssign.id, this.selectedSalesStaffId)
+      .subscribe({
+        next: () => {
+          this.hotToastService.success('Unit request assigned successfully');
+          this.closeAssignDialog();
+          this.loadRequests();
+          this.assigning = false;
+        },
+        error: (error) => {
+          console.error('Error assigning unit request:', error);
+          this.hotToastService.error('Failed to assign unit request');
+          this.assigning = false;
+        },
+      });
+  }
+
+  getSalesStaffName(salesStaffId: string | null): string {
+    if (!salesStaffId) return 'Not Assigned';
+    const salesUser = this.salesUsers().find((u) => u.id === salesStaffId);
+    return salesUser
+      ? `${salesUser.firstName} ${salesUser.lastName}`.trim() || salesUser.userName
+      : 'Unknown';
+  }
+
+  navigateToUnitDetails(unitId: string): void {
+    this.router.navigate(['/estate-units/details', unitId]);
   }
 
   // Delete methods

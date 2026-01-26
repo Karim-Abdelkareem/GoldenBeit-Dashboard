@@ -45,7 +45,9 @@ export class Sidebar implements OnInit {
   expandedItems = new Set<string>();
 
   // Items allowed for Consultative role
-  private readonly consultativeAllowedItems = ['Consultations', 'Consultation Requests'];
+  private readonly consultativeAllowedItems = ['Consultation Requests'];
+  // Items allowed for Sales role
+  private readonly salesAllowedItems = ['Unit Requests'];
 
   constructor(
     private hotToastService: HotToastService,
@@ -75,9 +77,19 @@ export class Sidebar implements OnInit {
     const user = this.user;
     if (!user) return false;
 
-    // Check roleName field (primary), then fallback to other possible fields
-    const roleName = user.roleName || user.role || user.roles?.[0];
-    return roleName === 'Consultative';
+    // Check if roles array includes 'Consultative'
+    const roles: string[] = user.roles || [];
+    return roles.includes('Consultative');
+  }
+
+  // Check if user has Sales role
+  get isSalesRole(): boolean {
+    const user = this.user;
+    if (!user) return false;
+
+    // Check if roles array includes 'Sales'
+    const roles: string[] = user.roles || [];
+    return roles.includes('Sales');
   }
 
   // Get filtered menu items based on user role
@@ -86,6 +98,18 @@ export class Sidebar implements OnInit {
       return this.GeneralItems.filter(item =>
         this.consultativeAllowedItems.includes(item.label)
       );
+    }
+    if (this.isSalesRole) {
+      const filtered = this.GeneralItems.filter(item =>
+        this.salesAllowedItems.includes(item.label)
+      );
+      // Update Unit Requests route for Sales role
+      return filtered.map(item => {
+        if (item.label === 'Unit Requests') {
+          return { ...item, route: '/unit-requests/salesstaff' };
+        }
+        return item;
+      });
     }
     return this.GeneralItems;
   }

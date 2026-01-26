@@ -16,25 +16,19 @@
     <!-- Search Bar -->
     <div class="flex gap-4 items-center">
       <div class="flex-1 relative">
-        <lucide-angular [img]="Search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-        <input
-          type="text"
-          [(ngModel)]="searchQuery"
-          (ngModelChange)="onSearch()"
+        <lucide-angular [img]="Search"
+          class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()"
           placeholder="Search by Unit ID, User ID, or Sales Staff ID..."
-          class="w-full pl-16 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
-        />
+          class="w-full pl-16 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent" />
       </div>
 
       <!-- Filter Button -->
       <div class="relative filter-dropdown-container">
-        <button
-          (click)="toggleFilterDropdown()"
+        <button (click)="toggleFilterDropdown()"
           class="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          [class.bg-[#0d5a4b]]="hasActiveFilters()"
-          [class.text-white]="hasActiveFilters()"
-          [class.border-[#0d5a4b]]="hasActiveFilters()"
-        >
+          [class.bg-[#0d5a4b]]="hasActiveFilters()" [class.text-white]="hasActiveFilters()"
+          [class.border-[#0d5a4b]]="hasActiveFilters()">
           <lucide-angular [img]="Filter" class="w-5 h-5" />
           <span>Filters</span>
           @if (hasActiveFilters()) {
@@ -46,19 +40,14 @@
 
         <!-- Filter Dropdown -->
         @if (filterDropdownOpen()) {
-        <div
-          class="absolute right-0 mt-2 w-80 bg-white border border-gray-300 rounded-lg shadow-xl z-50 p-4"
-          (click)="$event.stopPropagation()"
-        >
+        <div class="absolute right-0 mt-2 w-80 bg-white border border-gray-300 rounded-lg shadow-xl z-50 p-4"
+          (click)="$event.stopPropagation()">
           <div class="space-y-4">
             <!-- Status Filter -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-              <select
-                [(ngModel)]="selectedStatus"
-                (ngModelChange)="onFilterChange()"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0d5a4b]"
-              >
+              <select [(ngModel)]="selectedStatus" (ngModelChange)="onFilterChange()"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0d5a4b]">
                 <option [ngValue]="null">All Statuses</option>
                 @for (option of statusOptions; track option.value) {
                 <option [ngValue]="option.value">{{ option.label }}</option>
@@ -68,10 +57,8 @@
 
             <!-- Clear Filters Button -->
             @if (hasActiveFilters()) {
-            <button
-              (click)="clearFilters()"
-              class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
-            >
+            <button (click)="clearFilters()"
+              class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors">
               <lucide-angular [img]="X" class="w-4 h-4" />
               <span>Clear All Filters</span>
             </button>
@@ -126,41 +113,60 @@
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
     @for (request of requests(); track request.id) {
     <div
-      class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 group"
-    >
+      class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 group">
       <!-- Card Header with Unit Info -->
       <div class="bg-gradient-to-r from-[#0d5a4b] to-[#0f7a65] p-4">
-        <div class="flex items-start justify-between">
+        <div class="flex items-start justify-around">
           <div class="flex-1">
-            <div class="flex items-center gap-2 text-white/80 text-sm mb-1">
-              <lucide-angular [img]="Home" class="w-4 h-4" />
-              <span>Unit Request</span>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 text-white/80 text-sm mb-1">
+                <lucide-angular [img]="Home" class="w-4 h-4" />
+                <span>Unit Request</span>
+              </div>
+              <div class="px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1"
+                [ngClass]="getStatusInfo(request.status).class">
+                <lucide-angular [img]="getStatusInfo(request.status).icon" class="w-3 h-3" />
+                {{ getStatusInfo(request.status).text }}
+              </div>
             </div>
-            <h3 class="text-white font-semibold text-lg truncate">Unit: {{ truncateId(request.unitId) }}</h3>
+            <h3 class="text-white font-semibold text-lg truncate">
+              @if (request.unitTitleEn || request.unitTitleAr) {
+              <a (click)="navigateToUnitDetails(request.unitId)" class="hover:underline cursor-pointer"
+                title="View Unit Details">
+                {{ request.unitTitleEn || request.unitTitleAr }}
+              </a>
+              } @else {
+              Unit: {{ truncateId(request.unitId) }}
+              }
+            </h3>
+            @if (request.unitTitleAr && request.unitTitleEn) {
+            <p class="text-white/80 text-sm mt-1 truncate" dir="rtl">{{ request.unitTitleAr }}</p>
+            }
           </div>
-          <div
-            class="px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1"
-            [ngClass]="getStatusInfo(request.status).class"
-          >
-            <lucide-angular [img]="getStatusInfo(request.status).icon" class="w-3 h-3" />
-            {{ getStatusInfo(request.status).text }}
-          </div>
+
         </div>
       </div>
 
       <!-- Card Body -->
       <div class="p-4 space-y-3">
-        <!-- User ID -->
-        <div class="flex items-center gap-3 text-gray-600">
-          <lucide-angular [img]="User" class="w-4 h-4 text-[#0d5a4b]" />
-          <span class="text-sm truncate">User: {{ truncateId(request.userId) }}</span>
+        <!-- User Details -->
+        <div class="flex items-start gap-3 text-gray-600">
+          <lucide-angular [img]="User" class="w-4 h-4 text-[#0d5a4b] mt-0.5" />
+          <div class="flex-1">
+            <span class="text-sm font-medium">{{ request.userName || 'Unknown User' }}</span>
+            @if (request.userPhoneNumber) {
+            <p class="text-xs text-gray-500 mt-0.5">{{ request.userPhoneNumber }}</p>
+            }
+          </div>
         </div>
 
-        <!-- Sales Staff ID -->
+        <!-- Sales Staff -->
+        @if(isAdmin()) {
         <div class="flex items-center gap-3 text-gray-600">
           <lucide-angular [img]="UserCheck" class="w-4 h-4 text-[#0d5a4b]" />
-          <span class="text-sm truncate">Sales Staff: {{ truncateId(request.salesStaffId) }}</span>
+          <span class="text-sm">Sales Staff: {{ getSalesStaffName(request.salesStaffId) }}</span>
         </div>
+        }
 
         <!-- Date -->
         <div class="flex items-center gap-3 text-gray-600">
@@ -179,25 +185,26 @@
 
       <!-- Card Footer -->
       <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex justify-between items-center gap-2">
-        <button
-          (click)="viewRequest(request)"
-          class="flex items-center gap-2 px-3 py-1.5 text-sm text-[#0d5a4b] hover:bg-[#0d5a4b]/10 rounded-lg transition-colors"
-        >
+        <button (click)="viewRequest(request)"
+          class="flex items-center gap-2 px-3 py-1.5 text-sm text-[#0d5a4b] hover:bg-[#0d5a4b]/10 rounded-lg transition-colors">
           <lucide-angular [img]="Eye" class="w-4 h-4" />
           View Details
         </button>
         <div class="flex gap-2">
-          <button
-            (click)="openUpdateStatusDialog(request)"
-            class="flex items-center gap-2 px-3 py-1.5 text-sm bg-[#0d5a4b] text-white hover:bg-[#0f7a65] rounded-lg transition-colors"
-          >
+          @if (isAdmin()) {
+          <button (click)="openAssignDialog(request)"
+            class="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors">
+            <lucide-angular [img]="UserCheck" class="w-4 h-4" />
+            Assign
+          </button>
+          }
+          <button (click)="openUpdateStatusDialog(request)"
+            class="flex items-center gap-2 px-3 py-1.5 text-sm bg-[#0d5a4b] text-white hover:bg-[#0f7a65] rounded-lg transition-colors">
             <lucide-angular [img]="Send" class="w-4 h-4" />
             Update
           </button>
-          <button
-            (click)="confirmDelete(request)"
-            class="flex items-center gap-2 px-3 py-1.5 text-sm bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors"
-          >
+          <button (click)="confirmDelete(request)"
+            class="flex items-center gap-2 px-3 py-1.5 text-sm bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors">
             <lucide-angular [img]="Trash2" class="w-4 h-4" />
           </button>
         </div>
@@ -209,32 +216,22 @@
   <!-- Pagination -->
   @if (totalPages() > 1) {
   <div class="flex justify-center items-center gap-2 mt-8">
-    <button
-      (click)="previousPage()"
-      [disabled]="!hasPreviousPage()"
-      class="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-    >
+    <button (click)="previousPage()" [disabled]="!hasPreviousPage()"
+      class="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
       <lucide-angular [img]="ChevronLeft" class="w-5 h-5" />
     </button>
 
     @for (pageNum of getVisiblePages(); track pageNum) {
-    <button
-      (click)="goToPage(pageNum)"
-      class="px-4 py-2 rounded-lg border transition-colors"
-      [ngClass]="{
+    <button (click)="goToPage(pageNum)" class="px-4 py-2 rounded-lg border transition-colors" [ngClass]="{
         'bg-[#0d5a4b] text-white border-[#0d5a4b]': pageNum === page(),
         'border-gray-300 hover:bg-gray-100': pageNum !== page()
-      }"
-    >
+      }">
       {{ pageNum }}
     </button>
     }
 
-    <button
-      (click)="nextPage()"
-      [disabled]="!hasNextPage()"
-      class="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-    >
+    <button (click)="nextPage()" [disabled]="!hasNextPage()"
+      class="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
       <lucide-angular [img]="ChevronRight" class="w-5 h-5" />
     </button>
   </div>
@@ -243,15 +240,8 @@
 </div>
 
 <!-- Details Dialog -->
-<p-dialog
-  [(visible)]="detailsDialogVisible"
-  [modal]="true"
-  [style]="{ width: '600px', maxWidth: '95vw' }"
-  header="Unit Request Details"
-  [draggable]="false"
-  [resizable]="false"
-  (onHide)="closeDetailsDialog()"
->
+<p-dialog [(visible)]="detailsDialogVisible" [modal]="true" [style]="{ width: '600px', maxWidth: '95vw' }"
+  header="Unit Request Details" [draggable]="false" [resizable]="false" (onHide)="closeDetailsDialog()">
   @if (selectedRequest) {
   <div class="flex flex-col gap-4">
     <!-- Unit Info Header -->
@@ -260,7 +250,19 @@
         <lucide-angular [img]="Home" class="w-5 h-5" />
         <span class="text-sm opacity-80">Unit Request</span>
       </div>
+      @if (selectedRequest.unitTitleEn || selectedRequest.unitTitleAr) {
+      <h3 class="text-xl font-semibold">
+        <a (click)="navigateToUnitDetails(selectedRequest.unitId)" class="hover:underline cursor-pointer"
+          title="View Unit Details">
+          {{ selectedRequest.unitTitleEn || selectedRequest.unitTitleAr }}
+        </a>
+      </h3>
+      @if (selectedRequest.unitTitleAr && selectedRequest.unitTitleEn) {
+      <p class="text-white/80 mt-1" dir="rtl">{{ selectedRequest.unitTitleAr }}</p>
+      }
+      } @else {
       <h3 class="text-xl font-semibold">Unit ID: {{ selectedRequest.unitId }}</h3>
+      }
     </div>
 
     <!-- Status -->
@@ -269,29 +271,34 @@
         <lucide-angular [img]="getStatusInfo(selectedRequest.status).icon" class="w-5 h-5 text-gray-500" />
         <span class="text-gray-600">Status</span>
       </div>
-      <span
-        class="px-3 py-1 rounded-full text-sm font-semibold"
-        [ngClass]="getStatusInfo(selectedRequest.status).class"
-      >
+      <span class="px-3 py-1 rounded-full text-sm font-semibold"
+        [ngClass]="getStatusInfo(selectedRequest.status).class">
         {{ getStatusInfo(selectedRequest.status).text }}
       </span>
     </div>
 
-    <!-- User ID -->
+    <!-- User Details -->
     <div class="flex items-start gap-3 pb-3 border-b border-gray-200">
       <lucide-angular [img]="User" class="w-5 h-5 text-gray-500 mt-1" />
       <div class="flex-1">
-        <p class="text-sm text-gray-500 mb-1">User ID</p>
-        <p class="text-gray-800 font-mono text-sm break-all">{{ selectedRequest.userId }}</p>
+        <p class="text-sm text-gray-500 mb-1">User</p>
+        <p class="text-gray-800 font-semibold">{{ selectedRequest.userName || 'Unknown User' }}</p>
+        @if (selectedRequest.userPhoneNumber) {
+        <p class="text-gray-600 text-sm mt-1">{{ selectedRequest.userPhoneNumber }}</p>
+        }
+        <p class="text-gray-500 text-xs mt-1 font-mono">ID: {{ selectedRequest.userId }}</p>
       </div>
     </div>
 
-    <!-- Sales Staff ID -->
+    <!-- Sales Staff -->
     <div class="flex items-start gap-3 pb-3 border-b border-gray-200">
       <lucide-angular [img]="UserCheck" class="w-5 h-5 text-gray-500 mt-1" />
       <div class="flex-1">
-        <p class="text-sm text-gray-500 mb-1">Sales Staff ID</p>
-        <p class="text-gray-800 font-mono text-sm break-all">{{ selectedRequest.salesStaffId }}</p>
+        <p class="text-sm text-gray-500 mb-1">Sales Staff</p>
+        <p class="text-gray-800">{{ getSalesStaffName(selectedRequest.salesStaffId) }}</p>
+        @if (selectedRequest.salesStaffId) {
+        <p class="text-gray-500 text-xs mt-1 font-mono">ID: {{ selectedRequest.salesStaffId }}</p>
+        }
       </div>
     </div>
 
@@ -318,35 +325,31 @@
   }
   <ng-template pTemplate="footer">
     <div class="flex justify-between gap-3">
-      <button
-        type="button"
-        (click)="closeDetailsDialog(); openUpdateStatusDialog(selectedRequest!)"
-        class="px-4 py-2 bg-[#0d5a4b] text-white rounded-lg hover:bg-[#0f7a65] transition-colors flex items-center gap-2"
-      >
-        <lucide-angular [img]="Send" class="w-4 h-4" />
-        Update Status
+      @if (isAdmin()) {
+      <button type="button" (click)="closeDetailsDialog(); openAssignDialog(selectedRequest!)"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+        <lucide-angular [img]="UserCheck" class="w-4 h-4" />
+        Assign
       </button>
-      <button
-        type="button"
-        (click)="closeDetailsDialog()"
-        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-      >
-        Close
-      </button>
+      }
+      <div class="flex gap-3 ml-auto">
+        <button type="button" (click)="closeDetailsDialog(); openUpdateStatusDialog(selectedRequest!)"
+          class="px-4 py-2 bg-[#0d5a4b] text-white rounded-lg hover:bg-[#0f7a65] transition-colors flex items-center gap-2">
+          <lucide-angular [img]="Send" class="w-4 h-4" />
+          Update Status
+        </button>
+        <button type="button" (click)="closeDetailsDialog()"
+          class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+          Close
+        </button>
+      </div>
     </div>
   </ng-template>
 </p-dialog>
 
 <!-- Update Status Dialog -->
-<p-dialog
-  [(visible)]="updateStatusDialogVisible"
-  [modal]="true"
-  [style]="{ width: '500px', maxWidth: '95vw' }"
-  header="Update Request Status"
-  [draggable]="false"
-  [resizable]="false"
-  (onHide)="closeUpdateStatusDialog()"
->
+<p-dialog [(visible)]="updateStatusDialogVisible" [modal]="true" [style]="{ width: '500px', maxWidth: '95vw' }"
+  header="Update Request Status" [draggable]="false" [resizable]="false" (onHide)="closeUpdateStatusDialog()">
   @if (selectedRequest) {
   <div class="flex flex-col gap-5">
     <!-- Current Info -->
@@ -358,10 +361,8 @@
     <!-- Status Selection -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-2">New Status</label>
-      <select
-        [(ngModel)]="newStatus"
-        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent"
-      >
+      <select [(ngModel)]="newStatus"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent">
         <option [ngValue]="null">Select Status</option>
         @for (option of statusOptions; track option.value) {
         <option [ngValue]="option.value">{{ option.label }}</option>
@@ -372,20 +373,13 @@
   }
   <ng-template pTemplate="footer">
     <div class="flex justify-end gap-3">
-      <button
-        type="button"
-        (click)="closeUpdateStatusDialog()"
+      <button type="button" (click)="closeUpdateStatusDialog()"
         class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-        [disabled]="updatingStatus"
-      >
+        [disabled]="updatingStatus">
         Cancel
       </button>
-      <button
-        type="button"
-        (click)="updateStatus()"
-        [disabled]="newStatus === null || updatingStatus"
-        class="px-4 py-2 bg-[#0d5a4b] text-white rounded-lg hover:bg-[#0f7a65] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-      >
+      <button type="button" (click)="updateStatus()" [disabled]="newStatus === null || updatingStatus"
+        class="px-4 py-2 bg-[#0d5a4b] text-white rounded-lg hover:bg-[#0f7a65] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
         @if (updatingStatus) {
         <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
         Updating...
@@ -398,16 +392,66 @@
   </ng-template>
 </p-dialog>
 
+<!-- Assign to Sales Staff Dialog -->
+<p-dialog [(visible)]="assignDialogVisible" [modal]="true" [style]="{ width: '500px', maxWidth: '95vw' }"
+  header="Assign to Sales Staff" [draggable]="false" [resizable]="false" (onHide)="closeAssignDialog()">
+  @if (requestToAssign) {
+  <div class="flex flex-col gap-5">
+    <!-- Current Info -->
+    <div class="bg-gray-50 rounded-lg p-3">
+      <p class="text-sm text-gray-500 mb-1">Unit</p>
+      <p class="font-semibold text-gray-800">{{ requestToAssign.unitTitleEn || requestToAssign.unitTitleAr ||
+        truncateId(requestToAssign.unitId) }}</p>
+      @if (requestToAssign.unitTitleAr && requestToAssign.unitTitleEn) {
+      <p class="text-sm text-gray-600 mt-1" dir="rtl">{{ requestToAssign.unitTitleAr }}</p>
+      }
+    </div>
+
+    <!-- Sales Staff Selection -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Select Sales Staff</label>
+      @if (loadingSalesUsers()) {
+      <p class="text-sm text-gray-500">Loading sales staff...</p>
+      } @else if (salesUsers().length === 0) {
+      <p class="text-sm text-gray-500">No sales staff available</p>
+      } @else {
+      <select [(ngModel)]="selectedSalesStaffId"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d5a4b] focus:border-transparent">
+        <option [ngValue]="null">Not Assigned</option>
+        @for (salesUser of salesUsers(); track salesUser.id) {
+        <option [ngValue]="salesUser.id">
+          {{ salesUser.firstName }} {{ salesUser.lastName }} ({{ salesUser.userName }})
+        </option>
+        }
+      </select>
+      }
+    </div>
+  </div>
+  }
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3">
+      <button type="button" (click)="closeAssignDialog()"
+        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+        [disabled]="assigning">
+        Cancel
+      </button>
+      <button type="button" (click)="assignToSalesStaff()" [disabled]="assigning"
+        class="px-4 py-2 bg-[#0d5a4b] text-white rounded-lg hover:bg-[#0f7a65] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+        @if (assigning) {
+        <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        Assigning...
+        } @else {
+        <lucide-angular [img]="UserCheck" class="w-4 h-4" />
+        Assign
+        }
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>
+
 <!-- Delete Confirmation Dialog -->
-<p-dialog
-  [(visible)]="deleteDialogVisible"
-  [modal]="true"
-  [style]="{ width: '450px', maxWidth: '95vw' }"
-  header="Delete Unit Request"
-  [draggable]="false"
-  [resizable]="false"
-  (onHide)="closeDeleteDialog()"
->
+<p-dialog [(visible)]="deleteDialogVisible" [modal]="true" [style]="{ width: '450px', maxWidth: '95vw' }"
+  header="Delete Unit Request" [draggable]="false" [resizable]="false" (onHide)="closeDeleteDialog()">
   @if (requestToDelete) {
   <div class="flex flex-col gap-4">
     <div class="flex items-start gap-3">
@@ -431,20 +475,13 @@
   }
   <ng-template pTemplate="footer">
     <div class="flex justify-end gap-3">
-      <button
-        type="button"
-        (click)="closeDeleteDialog()"
+      <button type="button" (click)="closeDeleteDialog()"
         class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-        [disabled]="deleting"
-      >
+        [disabled]="deleting">
         Cancel
       </button>
-      <button
-        type="button"
-        (click)="deleteRequest()"
-        [disabled]="deleting"
-        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-      >
+      <button type="button" (click)="deleteRequest()" [disabled]="deleting"
+        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
         @if (deleting) {
         <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
         Deleting...
