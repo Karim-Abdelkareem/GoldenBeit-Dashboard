@@ -33,13 +33,14 @@ import {
   ChevronLeft,
   ChevronRight,
   ZoomIn,
+  Sparkles,
 } from 'lucide-angular';
 import { HotToastService } from '@ngxpert/hot-toast';
 import { environment } from '../../../environment/environment';
 
 @Component({
   selector: 'app-estate-unit-details',
-  imports: [CommonModule, LucideAngularModule, DatePipe, FormsModule, DialogModule],
+  imports: [CommonModule, LucideAngularModule, FormsModule, DialogModule],
   templateUrl: './estate-unit-details.html',
   styleUrl: './estate-unit-details.css',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -85,13 +86,14 @@ export class EstateUnitDetails implements OnInit {
   protected readonly ChevronLeft = ChevronLeft;
   protected readonly ChevronRight = ChevronRight;
   protected readonly ZoomIn = ZoomIn;
+  protected readonly Sparkles = Sparkles;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private estateUnitService: EstateunitService,
     private hotToastService: HotToastService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -107,6 +109,7 @@ export class EstateUnitDetails implements OnInit {
     this.loading.set(true);
     this.estateUnitService.getEstateUnit(id).subscribe(
       (response: any) => {
+        console.log(response);
         this.estateUnit.set(response);
         this.loading.set(false);
       },
@@ -177,6 +180,14 @@ export class EstateUnitDetails implements OnInit {
 
   getPaymentMethodText(method?: number): string {
     return method === 0 ? 'Cash' : method === 1 ? 'Installment' : 'N/A';
+  }
+
+  getServices(): Array<{ id: string; nameAr: string; nameEn: string }> {
+    const unit = this.estateUnit();
+    if (!unit || !unit['services'] || !Array.isArray(unit['services'])) {
+      return [];
+    }
+    return unit['services'];
   }
 
   // Update status methods
@@ -264,7 +275,7 @@ export class EstateUnitDetails implements OnInit {
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent): void {
     if (!this.imageModalVisible) return;
-    
+
     if (event.key === 'Escape') {
       this.closeImageModal();
     } else if (event.key === 'ArrowRight') {

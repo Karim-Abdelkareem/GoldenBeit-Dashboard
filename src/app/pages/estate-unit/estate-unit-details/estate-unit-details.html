@@ -247,6 +247,29 @@
           </div>
         </div>
 
+        <!-- Services -->
+        @if (getServices().length > 0) {
+        <div class="bg-white rounded-2xl p-6 shadow-sm">
+          <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <lucide-angular [img]="Sparkles" class="w-5 h-5 text-[#0d5a4b]" />
+            Services & Amenities
+          </h3>
+          <div class="grid md:grid-cols-2 gap-4">
+            @for (service of getServices(); track service.id) {
+            <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+              <div class="flex-shrink-0 w-8 h-8 rounded-full bg-[#0d5a4b]/10 flex items-center justify-center">
+                <lucide-angular [img]="CheckCircle2" class="w-4 h-4 text-[#0d5a4b]" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-gray-900 text-sm">{{ service.nameEn }}</p>
+                <p class="text-xs text-gray-600 mt-0.5" dir="rtl">{{ service.nameAr }}</p>
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+        }
+
         <!-- Payment Details -->
         @if (estateUnit()?.paidPrice || estateUnit()?.remainingPrice || estateUnit()?.meterPrice ||
         estateUnit()?.overPrice || estateUnit()?.paymentMethod !== undefined || estateUnit()?.installmentPeriod) {
@@ -446,15 +469,45 @@
                 <span class="font-medium text-gray-900">{{ estateUnit()?.stageNameAr }}</span>
               </div>
               }
+              @if (estateUnit()?.['otherProject']) {
+              <div class="flex justify-between pt-2 border-t border-gray-100">
+                <span class="text-gray-600">Stage Project</span>
+                <span class="font-medium text-gray-900">{{ estateUnit()?.['otherProject'] }}</span>
+              </div>
+              }
+              @if (estateUnit()?.['stageProjectNameEn']) {
+              <div class="flex justify-between pt-2 border-t border-gray-100">
+                <span class="text-gray-600">Stage Project</span>
+                <span class="font-medium text-gray-900">{{ estateUnit()?.['stageProjectNameEn'] }}</span>
+              </div>
+              }
+              @if (estateUnit()?.['stageProjectNameAr']) {
+              <div class="flex justify-between" dir="rtl">
+                <span class="text-gray-600">المشروع</span>
+                <span class="font-medium text-gray-900">{{ estateUnit()?.['stageProjectNameAr'] }}</span>
+              </div>
+              }
+              @if (estateUnit()?.['userName']) {
+              <div class="flex justify-between pt-2 border-t border-gray-100">
+                <span class="text-gray-600">Owner Name</span>
+                <span class="font-medium text-gray-900">{{ estateUnit()?.['userName'] }}</span>
+              </div>
+              }
+              @if (estateUnit()?.['userPhoneNumber']) {
+              <div class="flex justify-between">
+                <span class="text-gray-600">Phone Number</span>
+                <span class="font-medium text-gray-900">{{ estateUnit()?.['userPhoneNumber'] }}</span>
+              </div>
+              }
             </div>
           </div>
           }
 
           <!-- ID Card -->
-          <div class="bg-gray-100 rounded-2xl p-4">
+          <!-- <div class="bg-gray-100 rounded-2xl p-4">
             <p class="text-xs text-gray-500 mb-1">Property ID</p>
             <code class="text-sm text-gray-700 font-mono break-all">{{ estateUnit()?.id }}</code>
-          </div>
+          </div> -->
 
         </div>
       </div>

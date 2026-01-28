@@ -16,103 +16,89 @@
     <div class="grid md:grid-cols-2 xl:grid-cols-3 grid-cols-1 gap-6 px-4">
       @for (stage of stages(); track stage.id) {
       <div
-        class="col-span-1 flex flex-col gap-4 bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow overflow-hidden"
-      >
+        class="col-span-1 flex flex-col gap-4 bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow overflow-hidden">
         <!-- Stage Image -->
         @if (stage.imagePath) {
-        <div class="w-full h-48 overflow-hidden bg-gray-100">
-          <img
-            [src]="getImageUrl(stage.imagePath)"
-            [alt]="stage.nameEn || stage.nameAr"
-            class="w-full h-full object-cover"
-            (error)="$event.target.src = '/blog/3.jpg'"
-          />
+        <div class="w-full h-fit overflow-hidden bg-gray-100">
+          <img [src]="getImageUrl(stage.imagePath)" [alt]="stage.nameEn || stage.nameAr"
+            class="w-full h-full object-fill" (error)="$event.target.src = '/blog/3.jpg'" />
         </div>
         }
-        
+
         <div class="p-6 pt-4 flex flex-col gap-4">
-        <!-- Header with Actions -->
-        <div class="flex justify-between items-start">
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-2">
-              <lucide-angular [img]="Building2" class="w-6 h-6 text-[#0d5a4b]" />
-              <h3 class="ibm-plex-sans-arabic-bold text-lg text-gray-800 line-clamp-2">
-                {{ stage.nameEn || stage.nameAr }}
-              </h3>
+          <!-- Header with Actions -->
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-2">
+                <lucide-angular [img]="Building2" class="w-6 h-6 text-[#0d5a4b]" />
+                <h3 class="ibm-plex-sans-arabic-bold text-lg text-gray-800 line-clamp-2">
+                  {{ stage.nameEn || stage.nameAr }}
+                </h3>
+              </div>
+              @if (stage.nameAr && stage.nameAr !== stage.nameEn) {
+              <p class="ibm-plex-sans-arabic-regular text-sm text-gray-600 mb-2" dir="rtl">
+                {{ stage.nameAr }}
+              </p>
+              }
             </div>
-            @if (stage.nameAr && stage.nameAr !== stage.nameEn) {
-            <p class="ibm-plex-sans-arabic-regular text-sm text-gray-600 mb-2" dir="rtl">
-              {{ stage.nameAr }}
-            </p>
-            }
+            <div class="flex gap-2 shrink-0">
+              <button (click)="viewDetails(stage)"
+                class="p-2 hover:bg-green-50 rounded-md transition-colors cursor-pointer" title="View details">
+                <lucide-angular [img]="Eye" class="w-5 h-5 text-green-600" />
+              </button>
+              <button (click)="editStage(stage)"
+                class="p-2 hover:bg-blue-50 rounded-md transition-colors cursor-pointer" title="Edit stage">
+                <lucide-angular [img]="Pencil" class="w-5 h-5" />
+              </button>
+              <button (click)="deleteStage(stage)" class="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                title="Delete stage">
+                <lucide-angular [img]="Trash2" class="w-5 h-5" />
+              </button>
+            </div>
           </div>
-          <div class="flex gap-2 shrink-0">
-            <button
-              (click)="viewDetails(stage)"
-              class="p-2 hover:bg-green-50 rounded-md transition-colors cursor-pointer"
-              title="View details"
-            >
-              <lucide-angular [img]="Eye" class="w-5 h-5 text-green-600" />
-            </button>
-            <button
-              (click)="editStage(stage)"
-              class="p-2 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
-              title="Edit stage"
-            >
-              <lucide-angular [img]="Pencil" class="w-5 h-5" />
-            </button>
-            <button
-              (click)="deleteStage(stage)"
-              class="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
-              title="Delete stage"
-            >
-              <lucide-angular [img]="Trash2" class="w-5 h-5" />
-            </button>
+
+          <!-- Year -->
+          @if (stage.year) {
+          <div class="flex items-center gap-2 pt-2 border-t border-gray-100">
+            <lucide-angular [img]="Calendar" class="w-4 h-4 text-gray-500" />
+            <span class="text-sm text-gray-600">
+              <span class="font-medium">Year:</span> {{ stage.year }}
+            </span>
           </div>
-        </div>
+          }
 
-        <!-- Year -->
-        @if (stage.year) {
-        <div class="flex items-center gap-2 pt-2 border-t border-gray-100">
-          <lucide-angular [img]="Calendar" class="w-4 h-4 text-gray-500" />
-          <span class="text-sm text-gray-600">
-            <span class="font-medium">Year:</span> {{ stage.year }}
-          </span>
-        </div>
-        }
-
-        <!-- Project -->
-        @if (stage.projectNameEn || stage.projectNameAr) {
-        <div class="flex items-start gap-2 pt-2 border-t border-gray-100">
-          <lucide-angular [img]="Building2" class="w-4 h-4 text-gray-500 mt-0.5" />
-          <div class="flex-1">
-            <p class="text-xs text-gray-500 mb-1">Project</p>
-            <p class="text-sm text-gray-800 font-medium">
-              {{ stage.projectNameEn || stage.projectNameAr }}
-            </p>
-            @if (stage.projectNameAr && stage.projectNameAr !== stage.projectNameEn) {
-            <p class="text-xs text-gray-600 mt-1" dir="rtl">{{ stage.projectNameAr }}</p>
-            }
-          </div>
-        </div>
-        }
-
-        <!-- Cities -->
-        @if (getCityNames(stage).length > 0) {
-        <div class="flex items-start gap-2 pt-2 border-t border-gray-100">
-          <lucide-angular [img]="MapPin" class="w-4 h-4 text-gray-500 mt-0.5" />
-          <div class="flex-1">
-            <p class="text-xs text-gray-500 mb-2">Cities</p>
-            <div class="flex flex-wrap gap-1.5">
-              @for (cityName of getCityNames(stage); track cityName) {
-              <span class="px-2 py-1 bg-[#0d5a4b]/10 text-[#0d5a4b] rounded-md text-xs font-medium">
-                {{ cityName }}
-              </span>
+          <!-- Project -->
+          @if (stage.projectNameEn || stage.projectNameAr) {
+          <div class="flex items-start gap-2 pt-2 border-t border-gray-100">
+            <lucide-angular [img]="Building2" class="w-4 h-4 text-gray-500 mt-0.5" />
+            <div class="flex-1">
+              <p class="text-xs text-gray-500 mb-1">Project</p>
+              <p class="text-sm text-gray-800 font-medium">
+                {{ stage.projectNameEn || stage.projectNameAr }}
+              </p>
+              @if (stage.projectNameAr && stage.projectNameAr !== stage.projectNameEn) {
+              <p class="text-xs text-gray-600 mt-1" dir="rtl">{{ stage.projectNameAr }}</p>
               }
             </div>
           </div>
-        </div>
-        }
+          }
+
+          <!-- Cities -->
+          @if (getCityNames(stage).length > 0) {
+          <div class="flex items-start gap-2 pt-2 border-t border-gray-100">
+            <lucide-angular [img]="MapPin" class="w-4 h-4 text-gray-500 mt-0.5" />
+            <div class="flex-1">
+              <p class="text-xs text-gray-500 mb-2">Cities</p>
+              <div class="flex flex-wrap gap-1.5">
+                @for (cityName of getCityNames(stage); track cityName) {
+                <span class="px-2 py-1 bg-[#0d5a4b]/10 text-[#0d5a4b] rounded-md text-xs font-medium">
+                  {{ cityName }}
+                </span>
+                }
+              </div>
+            </div>
+          </div>
+          }
         </div>
       </div>
       } @empty {
@@ -127,17 +113,10 @@
     @if (totalPages() > 1) {
     <div class="flex justify-center items-center gap-2 my-20">
       <!-- Previous Button -->
-      <button
-        (click)="goToPrevious()"
-        [disabled]="page() === 1"
-        class="flex items-center gap-2 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:text-gray-600 transition-colors"
-      >
-        <lucide-angular
-          [img]="ChevronLeft"
-          class="w-5 h-5"
-          [class.text-gray-400]="page() !== 1"
-          [class.text-gray-300]="page() === 1"
-        ></lucide-angular>
+      <button (click)="goToPrevious()" [disabled]="page() === 1"
+        class="flex items-center gap-2 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:text-gray-600 transition-colors">
+        <lucide-angular [img]="ChevronLeft" class="w-5 h-5" [class.text-gray-400]="page() !== 1"
+          [class.text-gray-300]="page() === 1"></lucide-angular>
         <span class="ibm-plex-sans-arabic-medium text-sm">Previous</span>
       </button>
 
@@ -145,10 +124,8 @@
       <div class="flex items-center gap-2">
         <!-- First page if not in visible range -->
         @if (showStartEllipsis()) {
-        <button
-          (click)="goToPage(1)"
-          class="px-3 py-1.5 rounded-lg bg-[#E8F5E9] text-[#0B3122] ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors"
-        >
+        <button (click)="goToPage(1)"
+          class="px-3 py-1.5 rounded-lg bg-[#E8F5E9] text-[#0B3122] ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors">
           1
         </button>
         <span class="text-gray-400">...</span>
@@ -156,16 +133,11 @@
 
         <!-- Visible page numbers -->
         @for (pageNum of visiblePages(); track pageNum) {
-        <button
-          (click)="goToPage(pageNum)"
-          [class.bg-[#0B3122]]="page() === pageNum"
-          [class.text-white]="page() === pageNum"
-          [class.border]="page() === pageNum"
-          [class.border-yellow-400]="page() === pageNum"
-          [class.bg-[#E8F5E9]]="page() !== pageNum"
+        <button (click)="goToPage(pageNum)" [class.bg-[#0B3122]]="page() === pageNum"
+          [class.text-white]="page() === pageNum" [class.border]="page() === pageNum"
+          [class.border-yellow-400]="page() === pageNum" [class.bg-[#E8F5E9]]="page() !== pageNum"
           [class.text-[#0B3122]]="page() !== pageNum"
-          class="px-3 py-1.5 rounded-lg ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors"
-        >
+          class="px-3 py-1.5 rounded-lg ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors">
           {{ pageNum }}
         </button>
         }
@@ -173,28 +145,19 @@
         <!-- Last page if not in visible range -->
         @if (showEndEllipsis()) {
         <span class="text-gray-400">...</span>
-        <button
-          (click)="goToPage(totalPages())"
-          class="px-3 py-1.5 rounded-lg bg-[#E8F5E9] text-[#0B3122] ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors"
-        >
+        <button (click)="goToPage(totalPages())"
+          class="px-3 py-1.5 rounded-lg bg-[#E8F5E9] text-[#0B3122] ibm-plex-sans-arabic-medium text-sm hover:bg-[#C8E6C9] transition-colors">
           {{ totalPages() }}
         </button>
         }
       </div>
 
       <!-- Next Button -->
-      <button
-        (click)="goToNext()"
-        [disabled]="page() === totalPages()"
-        class="flex items-center gap-2 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:text-gray-600 transition-colors"
-      >
+      <button (click)="goToNext()" [disabled]="page() === totalPages()"
+        class="flex items-center gap-2 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:text-gray-600 transition-colors">
         <span class="ibm-plex-sans-arabic-medium text-sm">Next</span>
-        <lucide-angular
-          [img]="ChevronRight"
-          class="w-5 h-5"
-          [class.text-gray-400]="page() !== totalPages()"
-          [class.text-gray-300]="page() === totalPages()"
-        ></lucide-angular>
+        <lucide-angular [img]="ChevronRight" class="w-5 h-5" [class.text-gray-400]="page() !== totalPages()"
+          [class.text-gray-300]="page() === totalPages()"></lucide-angular>
       </button>
     </div>
     }
@@ -202,29 +165,18 @@
   }
 
   <!-- Details Dialog -->
-  <p-dialog
-    [(visible)]="detailsDialogVisible"
-    [modal]="true"
-    [style]="{ width: '700px', maxWidth: '90vw' }"
-    header="Stage Details"
-    [draggable]="false"
-    [resizable]="false"
-    (onHide)="closeDetailsDialog()"
-  >
+  <p-dialog [(visible)]="detailsDialogVisible" [modal]="true" [style]="{ width: '700px', maxWidth: '90vw' }"
+    header="Stage Details" [draggable]="false" [resizable]="false" (onHide)="closeDetailsDialog()">
     @if (selectedStage) {
     <div class="flex flex-col gap-4">
       <!-- Stage Image -->
       @if (selectedStage.imagePath) {
-      <div class="w-full h-64 overflow-hidden bg-gray-100 rounded-lg mb-4">
-        <img
-          [src]="getImageUrl(selectedStage.imagePath)"
-          [alt]="selectedStage.nameEn || selectedStage.nameAr"
-          class="w-full h-full object-cover"
-          (error)="$event.target.src = '/blog/3.jpg'"
-        />
+      <div class="w-full h-fit overflow-hidden bg-gray-100 rounded-lg mb-4">
+        <img [src]="getImageUrl(selectedStage.imagePath)" [alt]="selectedStage.nameEn || selectedStage.nameAr"
+          class="w-full h-full object-fill" (error)="$event.target.src = '/blog/3.jpg'" />
       </div>
       }
-      
+
       <!-- Name -->
       <div class="flex items-start gap-3 pb-3 border-b border-gray-200">
         <lucide-angular [img]="Building2" class="w-5 h-5 text-gray-500 mt-1" />
@@ -293,11 +245,8 @@
     }
     <ng-template pTemplate="footer">
       <div class="flex justify-end">
-        <button
-          type="button"
-          (click)="closeDetailsDialog()"
-          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
-        >
+        <button type="button" (click)="closeDetailsDialog()"
+          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors">
           Close
         </button>
       </div>
@@ -305,38 +254,25 @@
   </p-dialog>
 
   <!-- Delete Confirmation Dialog -->
-  <p-dialog
-    [(visible)]="deleteDialogVisible"
-    [modal]="true"
-    [style]="{ width: '450px' }"
-    header="Confirm Delete"
-    [draggable]="false"
-    [resizable]="false"
-  >
+  <p-dialog [(visible)]="deleteDialogVisible" [modal]="true" [style]="{ width: '450px' }" header="Confirm Delete"
+    [draggable]="false" [resizable]="false">
     <div class="flex flex-col gap-4">
       <p class="text-gray-700">
         Are you sure you want to delete
         <span class="font-semibold" style="color: #e2b43a">{{
           selectedStage?.nameEn || selectedStage?.nameAr || 'this stage'
-        }}</span
-        >?
+          }}</span>?
       </p>
       <p class="text-sm text-gray-500">This action cannot be undone.</p>
     </div>
     <ng-template pTemplate="footer">
       <div class="flex justify-end gap-2">
-        <button
-          type="button"
-          (click)="cancelDelete()"
-          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
-        >
+        <button type="button" (click)="cancelDelete()"
+          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors">
           Cancel
         </button>
-        <button
-          type="button"
-          (click)="confirmDelete()"
-          class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
-        >
+        <button type="button" (click)="confirmDelete()"
+          class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors">
           Delete
         </button>
       </div>
